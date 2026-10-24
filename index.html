@@ -117,14 +117,14 @@
                 </div>
             </div>
             <div class="flex space-x-2 mt-2 sm:mt-0">
-                <button onclick="saveDraft()" class="bg-amber-500 hover:bg-amber-600 text-white text-sm px-3 py-1.5 rounded flex items-center shadow">
-                    <i class="fa fa-save mr-1"></i> บันทึกร่าง
+                <button onclick="saveDraft()" class="bg-amber-500 hover:bg-amber-600 text-white text-sm px-3 py-1.5 rounded flex items-center shadow transition">
+                    <i class="fa fa-save mr-1.5"></i> บันทึกร่าง
                 </button>
-                <button onclick="loadDraft()" class="bg-blue-700 hover:bg-blue-800 text-white text-sm px-3 py-1.5 rounded flex items-center shadow">
-                    <i class="fa fa-folder-open mr-1"></i> ดึงร่างเดิม
+                <button onclick="confirmResetForm()" class="bg-red-600 hover:bg-red-700 text-white text-sm px-3 py-1.5 rounded flex items-center shadow transition">
+                    <i class="fa fa-refresh mr-1.5"></i> ล้างข้อมูล
                 </button>
-                <button onclick="printPDF()" class="bg-green-600 hover:bg-green-700 text-white text-sm px-3 py-1.5 rounded font-semibold flex items-center shadow">
-                    <i class="fa fa-print mr-1"></i> พิมพ์ / บันทึก PDF (1 หน้า)
+                <button onclick="printPDF()" class="bg-green-600 hover:bg-green-700 text-white text-sm px-3 py-1.5 rounded font-semibold flex items-center shadow transition">
+                    <i class="fa fa-print mr-1.5"></i> พิมพ์ / บันทึก PDF (1 หน้า)
                 </button>
             </div>
         </div>
@@ -133,106 +133,125 @@
     <div class="max-w-7xl mx-auto px-2 sm:px-4 py-6">
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
 
-            <!-- ฝั่งซ้าย: ฟอร์มกรอกข้อมูล -->
-            <div class="no-print lg:col-span-5 bg-white p-5 rounded-lg shadow-md border space-y-4 max-h-[calc(100vh-100px)] overflow-y-auto">
-                <h2 class="text-base font-bold text-gray-800 border-b pb-2 flex items-center">
-                    <i class="fa fa-edit text-blue-600 mr-2"></i> กรอกข้อมูล รายงานการใช้รถยนต์
-                </h2>
+            <!-- ฝั่งซ้าย: ฟอร์มกรอกข้อมูล (ขยายเป็น lg:col-span-6 เพิ่มความกว้าง) -->
+            <div class="no-print lg:col-span-6 bg-white p-5 rounded-lg shadow-md border space-y-4 max-h-[calc(100vh-100px)] overflow-y-auto">
+                <div class="flex justify-between items-center border-b pb-2">
+                    <h2 class="text-base font-bold text-gray-800 flex items-center">
+                        <i class="fa fa-edit text-blue-600 mr-2"></i> กรอกข้อมูล รายงานการใช้รถยนต์
+                    </h2>
+                    <span class="text-xs text-gray-500">* กรอกข้อมูลเพื่อพรีวิวและพิมพ์</span>
+                </div>
 
                 <!-- 1. ผู้รายงานและรถยนต์ -->
-                <div class="bg-gray-50 p-3 rounded border space-y-2">
-                    <h3 class="font-semibold text-sm text-blue-800">1. ผู้รายงานและรถยนต์</h3>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                <div class="bg-gray-50 p-4 rounded border space-y-3">
+                    <h3 class="font-semibold text-sm text-blue-800 flex items-center">
+                        <i class="fa fa-user mr-2"></i> 1. ผู้รายงานและรถยนต์
+                    </h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
                         <div>
-                            <label class="block font-bold mb-1">ชื่อ-สกุล ข้าพเจ้า *</label>
-                            <input type="text" id="input_reporter" oninput="updatePreview()" placeholder="นายสมชาย ใจดี" class="w-full p-2 border rounded">
+                            <label class="block font-bold mb-1 text-gray-700">ชื่อ-สกุล ข้าพเจ้า *</label>
+                            <input type="text" id="input_reporter" oninput="updatePreview()" placeholder="นายสมชาย ใจดี" class="w-full p-2.5 border rounded focus:ring-2 focus:ring-blue-500 focus:outline-none">
                         </div>
                         <div>
-                            <label class="block font-bold mb-1">ตำแหน่ง *</label>
-                            <input type="text" id="input_position" oninput="updatePreview()" placeholder="พนักงานขับรถยนต์" class="w-full p-2 border rounded">
+                            <label class="block font-bold mb-1 text-gray-700">ตำแหน่ง *</label>
+                            <input type="text" id="input_position" oninput="updatePreview()" placeholder="พนักงานขับรถยนต์" class="w-full p-2.5 border rounded focus:ring-2 focus:ring-blue-500 focus:outline-none">
                         </div>
                         <div>
-                            <label class="block font-bold mb-1">ทำหน้าที่ขับรถยนต์ *</label>
-                            <input type="text" id="input_car_type" oninput="updatePreview()" placeholder="ดับเพลิง" class="w-full p-2 border rounded">
+                            <label class="block font-bold mb-1 text-gray-700">ทำหน้าที่ขับรถยนต์ *</label>
+                            <input type="text" id="input_car_type" oninput="updatePreview()" placeholder="ดับเพลิง" class="w-full p-2.5 border rounded focus:ring-2 focus:ring-blue-500 focus:outline-none">
                         </div>
                         <div>
-                            <label class="block font-bold mb-1">หมายเลขทะเบียน *</label>
-                            <input type="text" id="input_plate" oninput="updatePreview()" placeholder="กข-1234 นม." class="w-full p-2 border rounded">
+                            <label class="block font-bold mb-1 text-gray-700">หมายเลขทะเบียน *</label>
+                            <input type="text" id="input_plate" oninput="updatePreview()" placeholder="กข-1234 นม." class="w-full p-2.5 border rounded focus:ring-2 focus:ring-blue-500 focus:outline-none">
                         </div>
                     </div>
                 </div>
 
                 <!-- 2. การปฏิบัติงาน -->
-                <div class="bg-gray-50 p-3 rounded border space-y-2">
-                    <h3 class="font-semibold text-sm text-blue-800">2. การปฏิบัติงานและเวลา</h3>
-                    <div class="text-xs space-y-2">
+                <div class="bg-gray-50 p-4 rounded border space-y-3">
+                    <h3 class="font-semibold text-sm text-blue-800 flex items-center">
+                        <i class="fa fa-calendar-check-o mr-2"></i> 2. การปฏิบัติงานและเวลา
+                    </h3>
+                    <div class="text-xs space-y-3">
                         <div>
-                            <label class="block font-bold mb-1">วันที่ปฏิบัติงาน *</label>
-                            <input type="text" id="input_date" oninput="updatePreview()" class="w-full p-2 border rounded">
+                            <label class="block font-bold mb-1 text-gray-700">วันที่ปฏิบัติงาน *</label>
+                            <input type="text" id="input_date" oninput="updatePreview()" class="w-full p-2.5 border rounded focus:ring-2 focus:ring-blue-500 focus:outline-none">
                         </div>
                         <div>
-                            <label class="block font-bold mb-1">ได้นำรถออกปฏิบัติงาน *</label>
-                            <textarea id="input_task" oninput="updatePreview()" rows="2" placeholder="ระบุภารกิจ..." class="w-full p-2 border rounded"></textarea>
+                            <label class="block font-bold mb-1 text-gray-700">ได้นำรถออกปฏิบัติงาน *</label>
+                            <textarea id="input_task" oninput="updatePreview()" rows="3" placeholder="ระบุภารกิจการนำรถออกปฏิบัติงาน..." class="w-full p-2.5 border rounded focus:ring-2 focus:ring-blue-500 focus:outline-none"></textarea>
                         </div>
-                        <div class="grid grid-cols-2 gap-2">
+                        <div class="grid grid-cols-2 gap-3">
                             <div>
-                                <label class="block font-bold mb-1">ตั้งแต่เวลา (น.)</label>
-                                <input type="text" id="input_start_time" oninput="updatePreview()" placeholder="08.30" class="w-full p-2 border rounded">
+                                <label class="block font-bold mb-1 text-gray-700">ตั้งแต่เวลา (น.)</label>
+                                <input type="text" id="input_start_time" oninput="updatePreview()" placeholder="08.30" class="w-full p-2.5 border rounded focus:ring-2 focus:ring-blue-500 focus:outline-none">
                             </div>
                             <div>
-                                <label class="block font-bold mb-1">ถึงเวลา (น.)</label>
-                                <input type="text" id="input_end_time" oninput="updatePreview()" placeholder="16.30" class="w-full p-2 border rounded">
+                                <label class="block font-bold mb-1 text-gray-700">ถึงเวลา (น.)</label>
+                                <input type="text" id="input_end_time" oninput="updatePreview()" placeholder="16.30" class="w-full p-2.5 border rounded focus:ring-2 focus:ring-blue-500 focus:outline-none">
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <!-- 3. ผู้ร่วมปฏิบัติงาน -->
-                <div class="bg-gray-50 p-3 rounded border space-y-2">
-                    <h3 class="font-semibold text-sm text-blue-800">3. ผู้ร่วมปฏิบัติงาน (6 ท่าน)</h3>
+                <div class="bg-gray-50 p-4 rounded border space-y-3">
+                    <h3 class="font-semibold text-sm text-blue-800 flex items-center">
+                        <i class="fa fa-users mr-2"></i> 3. ผู้ร่วมปฏิบัติงาน (สูงสุด 6 ท่าน)
+                    </h3>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
-                        <input type="text" id="input_team_1" oninput="updatePreview()" placeholder="1. ชื่อ-นามสกุล" class="p-1.5 border rounded">
-                        <input type="text" id="input_team_2" oninput="updatePreview()" placeholder="2. ชื่อ-นามสกุล" class="p-1.5 border rounded">
-                        <input type="text" id="input_team_3" oninput="updatePreview()" placeholder="3. ชื่อ-นามสกุล" class="p-1.5 border rounded">
-                        <input type="text" id="input_team_4" oninput="updatePreview()" placeholder="4. ชื่อ-นามสกุล" class="p-1.5 border rounded">
-                        <input type="text" id="input_team_5" oninput="updatePreview()" placeholder="5. ชื่อ-นามสกุล" class="p-1.5 border rounded">
-                        <input type="text" id="input_team_6" oninput="updatePreview()" placeholder="6. ชื่อ-นามสกุล" class="p-1.5 border rounded">
+                        <input type="text" id="input_team_1" oninput="updatePreview()" placeholder="1. ชื่อ-นามสกุล" class="p-2 border rounded">
+                        <input type="text" id="input_team_2" oninput="updatePreview()" placeholder="2. ชื่อ-นามสกุล" class="p-2 border rounded">
+                        <input type="text" id="input_team_3" oninput="updatePreview()" placeholder="3. ชื่อ-นามสกุล" class="p-2 border rounded">
+                        <input type="text" id="input_team_4" oninput="updatePreview()" placeholder="4. ชื่อ-นามสกุล" class="p-2 border rounded">
+                        <input type="text" id="input_team_5" oninput="updatePreview()" placeholder="5. ชื่อ-นามสกุล" class="p-2 border rounded">
+                        <input type="text" id="input_team_6" oninput="updatePreview()" placeholder="6. ชื่อ-นามสกุล" class="p-2 border rounded">
                     </div>
                 </div>
 
                 <!-- 4. พนักงานไม่ออกร่วมปฏิบัติงาน -->
-                <div class="bg-gray-50 p-3 rounded border space-y-2">
-                    <h3 class="font-semibold text-sm text-blue-800">4. พนักงานประจำรถไม่ออกร่วมปฏิบัติงาน</h3>
-                    <div class="space-y-1 text-xs">
-                        <div class="grid grid-cols-2 gap-1">
-                            <input type="text" id="input_absent_1" oninput="updatePreview()" placeholder="1. ชื่อ" class="p-1.5 border rounded">
-                            <input type="text" id="input_reason_1" oninput="updatePreview()" placeholder="สาเหตุ" class="p-1.5 border rounded">
+                <div class="bg-gray-50 p-4 rounded border space-y-3">
+                    <h3 class="font-semibold text-sm text-blue-800 flex items-center">
+                        <i class="fa fa-user-times mr-2"></i> 4. พนักงานประจำรถไม่ออกร่วมปฏิบัติงาน
+                    </h3>
+                    <div class="space-y-2 text-xs">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            <input type="text" id="input_absent_1" oninput="updatePreview()" placeholder="1. ชื่อ-นามสกุล" class="p-2 border rounded">
+                            <input type="text" id="input_reason_1" oninput="updatePreview()" placeholder="สาเหตุ" class="p-2 border rounded">
                         </div>
-                        <div class="grid grid-cols-2 gap-1">
-                            <input type="text" id="input_absent_2" oninput="updatePreview()" placeholder="2. ชื่อ" class="p-1.5 border rounded">
-                            <input type="text" id="input_reason_2" oninput="updatePreview()" placeholder="สาเหตุ" class="p-1.5 border rounded">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            <input type="text" id="input_absent_2" oninput="updatePreview()" placeholder="2. ชื่อ-นามสกุล" class="p-2 border rounded">
+                            <input type="text" id="input_reason_2" oninput="updatePreview()" placeholder="สาเหตุ" class="p-2 border rounded">
                         </div>
                     </div>
                 </div>
 
                 <!-- 5. ผลและอุปสรรค -->
-                <div class="bg-gray-50 p-3 rounded border space-y-2">
-                    <h3 class="font-semibold text-sm text-blue-800">5. ผลการปฏิบัติงานและอุปสรรค</h3>
-                    <div class="text-xs space-y-2">
-                        <textarea id="input_result" oninput="updatePreview()" rows="2" placeholder="ผลการปฏิบัติงาน..." class="w-full p-2 border rounded"></textarea>
-                        <textarea id="input_obstacle" oninput="updatePreview()" rows="2" placeholder="อุปสรรคและปัญหา..." class="w-full p-2 border rounded"></textarea>
+                <div class="bg-gray-50 p-4 rounded border space-y-3">
+                    <h3 class="font-semibold text-sm text-blue-800 flex items-center">
+                        <i class="fa fa-check-square-o mr-2"></i> 5. ผลการปฏิบัติงานและอุปสรรค
+                    </h3>
+                    <div class="text-xs space-y-3">
+                        <div>
+                            <label class="block font-bold mb-1 text-gray-700">ผลการปฏิบัติงาน</label>
+                            <textarea id="input_result" oninput="updatePreview()" rows="2.5" placeholder="ผลการปฏิบัติงาน..." class="w-full p-2.5 border rounded focus:ring-2 focus:ring-blue-500 focus:outline-none"></textarea>
+                        </div>
+                        <div>
+                            <label class="block font-bold mb-1 text-gray-700">อุปสรรคและปัญหา</label>
+                            <textarea id="input_obstacle" oninput="updatePreview()" rows="2.5" placeholder="อุปสรรคและปัญหา..." class="w-full p-2.5 border rounded focus:ring-2 focus:ring-blue-500 focus:outline-none"></textarea>
+                        </div>
                     </div>
                 </div>
 
                 <!-- 6. ผู้รับรายงาน & เซ็นต์ลายมือชื่อ -->
-                <div class="bg-gray-50 p-3 rounded border space-y-3">
-                    <h3 class="font-semibold text-sm text-blue-800 flex items-center justify-between">
-                        <span>6. การเสนอรายงานและลงนาม</span>
+                <div class="bg-gray-50 p-4 rounded border space-y-3">
+                    <h3 class="font-semibold text-sm text-blue-800 flex items-center">
+                        <i class="fa fa-pencil-square-o mr-2"></i> 6. การเสนอรายงานและลงนาม
                     </h3>
                     <div class="text-xs space-y-3">
                         <div>
-                            <label class="block font-bold mb-1">เรียน (ผู้รับรายงาน) *</label>
-                            <select id="input_recipient" onchange="updatePreview()" class="w-full p-2 border rounded font-semibold text-blue-900 bg-white">
+                            <label class="block font-bold mb-1 text-gray-700">เรียน (ผู้รับรายงาน) *</label>
+                            <select id="input_recipient" onchange="updatePreview()" class="w-full p-2.5 border rounded font-semibold text-blue-900 bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none">
                                 <option value="หัวหน้างานศูนย์ป้องกันและบรรเทาสาธารณภัย">หัวหน้างานศูนย์ป้องกันและบรรเทาสาธารณภัย</option>
                                 <option value="หัวหน้าสถานีดับเพลิงสุรนารายณ์">หัวหน้าสถานีดับเพลิงสุรนารายณ์</option>
                                 <option value="สถานีดับเพลิงการเคหะฯ">สถานีดับเพลิงการเคหะฯ</option>
@@ -242,40 +261,46 @@
                         </div>
 
                         <!-- เซ็นชื่อ พนักงานขับรถ -->
-                        <div class="border p-2 bg-white rounded space-y-1">
+                        <div class="border p-3 bg-white rounded space-y-1.5 shadow-sm">
                             <div class="flex justify-between items-center">
                                 <label class="font-bold text-gray-700">ลายมือชื่อ พนักงานขับรถ</label>
-                                <button onclick="clearSignature('driver')" class="text-red-500 hover:text-red-700 text-[11px] underline">
+                                <button onclick="clearSignature('driver')" class="text-red-500 hover:text-red-700 text-xs font-semibold underline">
                                     <i class="fa fa-eraser"></i> ล้างลายเซ็น
                                 </button>
                             </div>
-                            <canvas id="canvas_driver" width="300" height="90" class="signature-canvas w-full"></canvas>
+                            <canvas id="canvas_driver" width="350" height="90" class="signature-canvas w-full"></canvas>
                         </div>
 
                         <!-- เซ็นชื่อ หัวหน้าชุดเวร -->
-                        <div class="border p-2 bg-white rounded space-y-1">
-                            <div class="grid grid-cols-2 gap-2 mb-1">
-                                <input type="text" id="input_head_name" oninput="updatePreview()" placeholder="ชื่อหัวหน้าชุดเวร" class="p-1.5 border rounded">
-                                <input type="text" id="input_head_pos" oninput="updatePreview()" placeholder="ตำแหน่งหัวหน้าชุดเวร" class="p-1.5 border rounded">
+                        <div class="border p-3 bg-white rounded space-y-2 shadow-sm">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-1">
+                                <input type="text" id="input_head_name" oninput="updatePreview()" placeholder="ชื่อหัวหน้าชุดเวร" class="p-2 border rounded">
+                                <input type="text" id="input_head_pos" oninput="updatePreview()" placeholder="ตำแหน่งหัวหน้าชุดเวร" class="p-2 border rounded">
                             </div>
                             <div class="flex justify-between items-center">
                                 <label class="font-bold text-gray-700">ลายมือชื่อ หัวหน้าชุดเวรเตรียมพร้อม</label>
-                                <button onclick="clearSignature('head')" class="text-red-500 hover:text-red-700 text-[11px] underline">
+                                <button onclick="clearSignature('head')" class="text-red-500 hover:text-red-700 text-xs font-semibold underline">
                                     <i class="fa fa-eraser"></i> ล้างลายเซ็น
                                 </button>
                             </div>
-                            <canvas id="canvas_head" width="300" height="90" class="signature-canvas w-full"></canvas>
+                            <canvas id="canvas_head" width="350" height="90" class="signature-canvas w-full"></canvas>
                         </div>
                     </div>
                 </div>
 
-                <button onclick="printPDF()" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded shadow transition flex items-center justify-center">
-                    <i class="fa fa-file-pdf-o text-lg mr-2"></i> สั่งพิมพ์เอกสาร / บันทึกเป็น PDF (1 หน้า)
-                </button>
+                <!-- ปุ่มแอ็กชันล่างฟอร์ม -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2">
+                    <button onclick="confirmResetForm()" class="w-full bg-gray-500 hover:bg-gray-600 text-white font-bold py-3 px-4 rounded shadow transition text-center flex items-center justify-center">
+                        <i class="fa fa-refresh mr-2"></i> ล้างข้อมูลทั้งหมด
+                    </button>
+                    <button onclick="printPDF()" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded shadow transition text-center flex items-center justify-center">
+                        <i class="fa fa-file-pdf-o text-lg mr-2"></i> สั่งพิมพ์ / บันทึก PDF (1 หน้า)
+                    </button>
+                </div>
             </div>
 
-            <!-- ฝั่งขวา: ตัวอย่างเอกสาร A4 -->
-            <div class="lg:col-span-7 flex justify-center overflow-x-auto">
+            <!-- ฝั่งขวา: ตัวอย่างเอกสาร A4 (ปรับความกว้างเป็น lg:col-span-6) -->
+            <div class="lg:col-span-6 flex justify-center overflow-x-auto">
                 <div id="pdf-content" class="a4-document">
                     
                     <!-- หัวกระดาษ -->
@@ -391,7 +416,7 @@
                 this.canvas.addEventListener('mouseup', () => this.stopDrawing());
                 this.canvas.addEventListener('mouseleave', () => this.stopDrawing());
 
-                // Touch Events (สำหรับมือถือ/แท็บเล็ต)
+                // Touch Events
                 this.canvas.addEventListener('touchstart', (e) => {
                     e.preventDefault();
                     const touch = e.touches[0];
@@ -508,7 +533,6 @@
                 if (input.id) formData[input.id] = input.value;
             });
 
-            // เพิ่มข้อมูลลายเซ็นลงในร่าง
             formData['sig_driver_data'] = sigDriver.getData();
             formData['sig_head_data'] = sigHead.getData();
 
@@ -516,12 +540,11 @@
             Swal.fire({ icon: 'success', title: 'บันทึกแบบร่างสำเร็จ', timer: 1500, showConfirmButton: false });
         }
 
-        function loadDraft() {
+        // โหลดข้อมูลแบบร่างอัตโนมัติเมื่อเปิดหน้าเว็บ
+        function autoLoadDraft() {
             const savedData = localStorage.getItem('korat_car_report_draft');
-            if (!savedData) {
-                Swal.fire({ icon: 'info', title: 'ไม่พบแบบร่าง' });
-                return;
-            }
+            if (!savedData) return;
+
             const formData = JSON.parse(savedData);
             Object.keys(formData).forEach(id => {
                 const elem = document.getElementById(id);
@@ -532,18 +555,65 @@
             if (formData['sig_head_data']) sigHead.loadData(formData['sig_head_data']);
 
             updatePreview();
-            Swal.fire({ icon: 'success', title: 'โหลดข้อมูลสำเร็จ', timer: 1500, showConfirmButton: false });
         }
 
-        window.addEventListener('DOMContentLoaded', () => {
-            // ริเริ่ม Canvas ลายเซ็น
-            sigDriver = new SignaturePadManager('canvas_driver', 'img_sign_driver');
-            sigHead = new SignaturePadManager('canvas_head', 'img_sign_head');
+        // ยืนยันก่อนล้างข้อมูลทั้งหมดในฟอร์ม
+        function confirmResetForm() {
+            Swal.fire({
+                title: 'ยืนยันการล้างข้อมูล?',
+                text: 'ข้อมูลและลายเซ็นที่กรอกไว้จะถูกล้างทั้งหมด',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'ใช่, ล้างข้อมูล',
+                cancelButtonText: 'ยกเลิก'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    resetForm();
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'ล้างข้อมูลเรียบร้อย',
+                        timer: 1200,
+                        showConfirmButton: false
+                    });
+                }
+            });
+        }
 
-            // วันที่ปัจจุบันในไทย
+        // ฟังก์ชันล้างข้อมูลฟอร์ม
+        function resetForm() {
+            document.querySelectorAll('input, textarea').forEach(input => {
+                if (input.id !== 'input_date') {
+                    input.value = '';
+                }
+            });
+
+            document.getElementById('input_recipient').selectedIndex = 0;
+            
+            sigDriver.clear();
+            sigHead.clear();
+            localStorage.removeItem('korat_car_report_draft');
+
+            // ตั้งค่าวันที่ปัจจุบันใหม่
             const today = new Date();
             const thaiMonths = ['มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน', 'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'];
             document.getElementById('input_date').value = `${today.getDate()} ${thaiMonths[today.getMonth()]} ${today.getFullYear() + 543}`;
+
+            updatePreview();
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            sigDriver = new SignaturePadManager('canvas_driver', 'img_sign_driver');
+            sigHead = new SignaturePadManager('canvas_head', 'img_sign_head');
+
+            // ตั้งค่าวันที่ปัจจุบันในไทย
+            const today = new Date();
+            const thaiMonths = ['มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน', 'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'];
+            document.getElementById('input_date').value = `${today.getDate()} ${thaiMonths[today.getMonth()]} ${today.getFullYear() + 543}`;
+
+            // โหลดแบบร่างเดิมให้อัตโนมัติ (ถ้ามี)
+            autoLoadDraft();
             updatePreview();
         });
     </script>
