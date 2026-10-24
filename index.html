@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>รายงานการใช้รถยนต์ออกปฏิบัติงาน - เทศบาลนครนครราชสีมา</title>
+    <title>รายงานการใช้รถยนต์ออกปฎิบัติงาน - เทศบาลนครนครราชสีมา</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- SweetAlert2 -->
@@ -15,11 +15,18 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css">
 
     <style>
-        /* กำหนดฟอนต์ TH Sarabun New และ Sarabun */
+        /* ฟอนต์ THSarabunNew */
         @font-face {
             font-family: 'THSarabunNew';
             src: url('https://cdn.jsdelivr.net/gh/lazywasabi/thai-web-fonts@2.0/fonts/THSarabunNew/THSarabunNew.woff2') format('woff2');
             font-weight: normal;
+            font-style: normal;
+            font-display: swap;
+        }
+        @font-face {
+            font-family: 'THSarabunNew';
+            src: url('https://cdn.jsdelivr.net/gh/lazywasabi/thai-web-fonts@2.0/fonts/THSarabunNew/THSarabunNew-Bold.woff2') format('woff2');
+            font-weight: bold;
             font-style: normal;
             font-display: swap;
         }
@@ -29,19 +36,21 @@
             background-color: #f3f4f6;
         }
 
-        /* เอกสาร A4 สำหรับพรีวิวและพิมพ์ */
+        /* เอกสาร A4 สำหรับพรีวิวและพิมพ์ - ปรับให้อยู่ใน 1 หน้า A4 เสมอ */
         .a4-document {
             font-family: 'THSarabunNew', 'Sarabun', sans-serif !important;
-            font-size: 16pt !important;
-            line-height: 1.35 !important;
+            font-size: 15pt !important;
+            line-height: 1.25 !important;
             width: 210mm;
-            min-height: 297mm;
-            padding: 15mm 15mm 15mm 20mm;
+            height: 297mm;
+            max-height: 297mm;
+            padding: 12mm 15mm 12mm 20mm;
             margin: auto;
             background: white;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
             box-sizing: border-box;
             color: #000;
+            overflow: hidden;
         }
 
         .dotted-line {
@@ -49,12 +58,21 @@
             display: inline-block;
             padding: 0 4px;
             text-align: center;
-            min-height: 1.2em;
+            min-height: 1.15em;
             word-break: break-all;
         }
 
-        /* การตั้งค่าสำหรับการพิมพ์ PDF / พิมพ์ออกกระดาษ */
+        /* การตั้งค่าสำหรับการพิมพ์ PDF / พิมพ์ออกกระดาษให้ล็อค 1 หน้า */
         @media print {
+            @page {
+                size: A4 portrait;
+                margin: 0;
+            }
+            body {
+                background: white !important;
+                margin: 0 !important;
+                padding: 0 !important;
+            }
             body * {
                 visibility: hidden;
             }
@@ -65,10 +83,12 @@
                 position: absolute;
                 left: 0;
                 top: 0;
-                width: 100% !important;
-                margin: 0 !important;
-                padding: 10mm 15mm 10mm 20mm !important;
+                width: 210mm !important;
+                height: 297mm !important;
+                padding: 12mm 15mm 10mm 20mm !important;
                 box-shadow: none !important;
+                page-break-after: avoid !important;
+                page-break-inside: avoid !important;
             }
             .no-print {
                 display: none !important;
@@ -84,7 +104,7 @@
             <div class="flex items-center space-x-3">
                 <i class="fa fa-car text-amber-400 text-2xl"></i>
                 <div>
-                    <h1 class="text-lg font-bold">ระบบรายงานการใช้รถยนต์ออกปฏิบัติงาน</h1>
+                    <h1 class="text-lg font-bold">ระบบรายงานการใช้รถยนต์ออกปฎิบัติงาน</h1>
                     <p class="text-xs text-blue-200">ฝ่ายปกครอง สำนักปลัดเทศบาล เทศบาลนครนครราชสีมา</p>
                 </div>
             </div>
@@ -96,7 +116,7 @@
                     <i class="fa fa-folder-open mr-1"></i> ดึงร่างเดิม
                 </button>
                 <button onclick="printPDF()" class="bg-green-600 hover:bg-green-700 text-white text-sm px-3 py-1.5 rounded font-semibold flex items-center shadow">
-                    <i class="fa fa-print mr-1"></i> พิมพ์ / บันทึก PDF
+                    <i class="fa fa-print mr-1"></i> พิมพ์ / บันทึก PDF (1 หน้า)
                 </button>
             </div>
         </div>
@@ -222,81 +242,81 @@
                 </button>
             </div>
 
-            <!-- ฝั่งขวา: ตัวอย่างเอกสาร A4 -->
+            <!-- ฝั่งขวา: ตัวอย่างเอกสาร A4 (พอดี 1 หน้าพอดี) -->
             <div class="lg:col-span-7 flex justify-center overflow-x-auto">
                 <div id="pdf-content" class="a4-document">
                     
-                    <!-- หัวกระดาษ -->
-                    <div class="text-center font-bold mb-3">
+                    <!-- หัวกระดาษ (แก้ไขข้อความตามที่แจ้ง) -->
+                    <div class="text-center font-bold mb-2">
                         <div class="text-xl">รายงานการใช้รถยนต์ออกปฎิบัติงาน</div>
                         <div class="text-lg">ฝ่ายปกครอง สำนักปลัดเทศบาล เทศบาลนครนครราชสีมา</div>
-                        <div class="tracking-widest overflow-hidden leading-none mt-1">........................................................................................................................................................</div>
+                        <div class="tracking-widest overflow-hidden leading-none mt-0.5">........................................................................................................................................................</div>
                     </div>
 
                     <!-- เนื้อหา -->
-                    <div class="space-y-1 text-justify">
-                        <div class="indent-12">
+                    <div class="space-y-0.5 text-justify">
+                        <div class="indent-10">
                             ข้าพเจ้า <span id="view_reporter" class="dotted-line min-w-[200px]"></span>
                             ตำแหน่ง <span id="view_position" class="dotted-line min-w-[180px]"></span>
                         </div>
                         
                         <div>
-                            ทำหน้าที่ขับรถยนต์ <span id="view_car_type" class="dotted-line min-w-[150px]"></span>
-                            หมายเลขทะเบียน <span id="view_plate" class="dotted-line min-w-[150px]"></span>
-                            ในวันที่ <span id="view_date" class="dotted-line min-w-[160px]"></span>
-                            ได้นำรถออกปฎิบัติงาน <span id="view_task" class="dotted-line w-full min-h-[3.5em] whitespace-pre-wrap"></span>
+                            ทำหน้าที่ขับรถยนต์ <span id="view_car_type" class="dotted-line min-w-[140px]"></span>
+                            หมายเลขทะเบียน <span id="view_plate" class="dotted-line min-w-[140px]"></span>
+                            ในวันที่ <span id="view_date" class="dotted-line min-w-[150px]"></span>
+                            ได้นำรถออกปฎิบัติงาน <span id="view_task" class="dotted-line w-full min-h-[2.8em] whitespace-pre-wrap"></span>
                         </div>
 
-                        <div class="indent-12 pt-1">
-                            ออกปฏิบัติงานตั้งแต่เวลา <span id="view_start_time" class="dotted-line min-w-[80px]"></span> น.
-                            ถึงเวลา <span id="view_end_time" class="dotted-line min-w-[80px]"></span> น.
+                        <div class="indent-10 pt-0.5">
+                            ออกปฏิบัติงานตั้งแต่เวลา <span id="view_start_time" class="dotted-line min-w-[70px]"></span> น.
+                            ถึงเวลา <span id="view_end_time" class="dotted-line min-w-[70px]"></span> น.
                             มีร่วมผู้ปฎิบัติงานดังนี้
                         </div>
 
                         <!-- ผู้ร่วมปฏิบัติงาน -->
-                        <div class="grid grid-cols-2 gap-x-4 pl-4 py-1">
-                            <div>1. <span id="view_team_1" class="dotted-line min-w-[190px]"></span></div>
-                            <div>2. <span id="view_team_2" class="dotted-line min-w-[190px]"></span></div>
-                            <div>3. <span id="view_team_3" class="dotted-line min-w-[190px]"></span></div>
-                            <div>4. <span id="view_team_4" class="dotted-line min-w-[190px]"></span></div>
-                            <div>5. <span id="view_team_5" class="dotted-line min-w-[190px]"></span></div>
-                            <div>6. <span id="view_team_6" class="dotted-line min-w-[190px]"></span></div>
+                        <div class="grid grid-cols-2 gap-x-4 pl-4 py-0.5">
+                            <div>1. <span id="view_team_1" class="dotted-line min-w-[180px]"></span></div>
+                            <div>2. <span id="view_team_2" class="dotted-line min-w-[180px]"></span></div>
+                            <div>3. <span id="view_team_3" class="dotted-line min-w-[180px]"></span></div>
+                            <div>4. <span id="view_team_4" class="dotted-line min-w-[180px]"></span></div>
+                            <div>5. <span id="view_team_5" class="dotted-line min-w-[180px]"></span></div>
+                            <div>6. <span id="view_team_6" class="dotted-line min-w-[180px]"></span></div>
                         </div>
 
                         <!-- พนักงานไม่ออกร่วมปฏิบัติงาน -->
-                        <div class="indent-12 pt-1">พนักงานประจำรถไม่ออกร่วมปฎิบัติงาน มีดังนี้</div>
-                        <div class="pl-4 space-y-1">
-                            <div>1. <span id="view_absent_1" class="dotted-line min-w-[180px]"></span> สาเหตุเนื่องจาก <span id="view_reason_1" class="dotted-line min-w-[210px]"></span></div>
-                            <div>2. <span id="view_absent_2" class="dotted-line min-w-[180px]"></span> สาเหตุเนื่องจาก <span id="view_reason_2" class="dotted-line min-w-[210px]"></span></div>
+                        <div class="indent-10 pt-0.5">พนักงานประจำรถไม่ออกร่วมปฎิบัติงาน มีดังนี้</div>
+                        <div class="pl-4 space-y-0.5">
+                            <div>1. <span id="view_absent_1" class="dotted-line min-w-[170px]"></span> สาเหตุเนื่องจาก <span id="view_reason_1" class="dotted-line min-w-[200px]"></span></div>
+                            <div>2. <span id="view_absent_2" class="dotted-line min-w-[170px]"></span> สาเหตุเนื่องจาก <span id="view_reason_2" class="dotted-line min-w-[200px]"></span></div>
                         </div>
 
-                        <div class="pt-1">ผลการปฏิบัติงาน <span id="view_result" class="dotted-line w-full min-h-[2.5em] whitespace-pre-wrap"></span></div>
-                        <div class="pt-1">อุปสรรคและปัญหา <span id="view_obstacle" class="dotted-line w-full min-h-[2.5em] whitespace-pre-wrap"></span></div>
+                        <div class="pt-0.5">ผลการปฏิบัติงาน <span id="view_result" class="dotted-line w-full min-h-[2.2em] whitespace-pre-wrap"></span></div>
+                        <div class="pt-0.5">อุปสรรคและปัญหา <span id="view_obstacle" class="dotted-line w-full min-h-[2.2em] whitespace-pre-wrap"></span></div>
                     </div>
 
                     <!-- ลงชื่อพนักงานขับรถ -->
-                    <div class="mt-4 flex justify-end">
-                        <div class="text-center w-72 space-y-1">
+                    <div class="mt-3 flex justify-end">
+                        <div class="text-center w-72 space-y-0.5">
                             <div>ลงชื่อ ....................................................... พนักงานขับรถ</div>
-                            <div>( <span id="view_reporter_sign" class="dotted-line min-w-[180px]"></span> )</div>
-                            <div>ตำแหน่ง <span id="view_position_sign" class="dotted-line min-w-[180px]"></span></div>
+                            <div>( <span id="view_reporter_sign" class="dotted-line min-w-[170px]"></span> )</div>
+                            <div>ตำแหน่ง <span id="view_position_sign" class="dotted-line min-w-[170px]"></span></div>
                         </div>
                     </div>
 
                     <!-- ส่วนเสนอรายงาน -->
-                    <div class="mt-3 pt-1">
+                    <div class="mt-2 pt-1">
                         <div class="font-bold">
                             เรียน <span id="view_recipient">หัวหน้างานศูนย์ป้องกันและบรรเทาสาธารณภัย</span>
                         </div>
-                        <div class="pl-6 min-h-[1.5em]">
+                        <div class="pl-6 min-h-[1.2em]">
                             ............................................................................................................................................................................
                         </div>
 
-                        <div class="mt-3 flex justify-end">
-                            <div class="text-center w-72 space-y-1">
+                        <div class="mt-2 flex justify-end">
+                            <div class="text-center w-72 space-y-0.5">
                                 <div>ลงชื่อ ....................................................... หัวหน้าชุดเวรเตรียมพร้อม</div>
-                                <div>( <span id="view_head_name" class="dotted-line min-w-[180px]"></span> )</div>
-                                <div>ตำแหน่ง <span id="view_head_pos" class="dotted-line min-w-[180px]"></span></div>
+                                <div>( <span id="view_head_name" class="dotted-line min-w-[170px]"></span> )</div>
+                                <div>ตำแหน่ง <span id="view_head_pos" class="dotted-line min-w-[170px]"></span></div>
                             </div>
                         </div>
                     </div>
