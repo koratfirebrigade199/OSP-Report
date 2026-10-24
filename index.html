@@ -44,7 +44,7 @@
             width: 210mm;
             height: 297mm;
             max-height: 297mm;
-            padding: 12mm 15mm 12mm 20mm;
+            padding: 12mm 15mm 10mm 20mm;
             margin: auto;
             background: white;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
@@ -60,6 +60,14 @@
             text-align: center;
             min-height: 1.15em;
             word-break: break-all;
+        }
+
+        .signature-canvas {
+            border: 1px dashed #9ca3af;
+            border-radius: 0.375rem;
+            background-color: #ffffff;
+            touch-action: none;
+            cursor: crosshair;
         }
 
         /* การตั้งค่าสำหรับการพิมพ์ PDF / พิมพ์ออกกระดาษให้ล็อค 1 หน้า */
@@ -216,10 +224,12 @@
                     </div>
                 </div>
 
-                <!-- 6. ผู้รับรายงาน -->
-                <div class="bg-gray-50 p-3 rounded border space-y-2">
-                    <h3 class="font-semibold text-sm text-blue-800">6. การเสนอรายงานและลงนาม</h3>
-                    <div class="text-xs space-y-2">
+                <!-- 6. ผู้รับรายงาน & เซ็นต์ลายมือชื่อ -->
+                <div class="bg-gray-50 p-3 rounded border space-y-3">
+                    <h3 class="font-semibold text-sm text-blue-800 flex items-center justify-between">
+                        <span>6. การเสนอรายงานและลงนาม</span>
+                    </h3>
+                    <div class="text-xs space-y-3">
                         <div>
                             <label class="block font-bold mb-1">เรียน (ผู้รับรายงาน) *</label>
                             <select id="input_recipient" onchange="updatePreview()" class="w-full p-2 border rounded font-semibold text-blue-900 bg-white">
@@ -230,23 +240,45 @@
                                 <option value="สถานีดับเพลิงจามจุรี">สถานีดับเพลิงจามจุรี</option>
                             </select>
                         </div>
-                        <div class="grid grid-cols-2 gap-2">
-                            <input type="text" id="input_head_name" oninput="updatePreview()" placeholder="ชื่อหัวหน้าชุดเวร" class="p-1.5 border rounded">
-                            <input type="text" id="input_head_pos" oninput="updatePreview()" placeholder="ตำแหน่งหัวหน้าชุดเวร" class="p-1.5 border rounded">
+
+                        <!-- เซ็นชื่อ พนักงานขับรถ -->
+                        <div class="border p-2 bg-white rounded space-y-1">
+                            <div class="flex justify-between items-center">
+                                <label class="font-bold text-gray-700">ลายมือชื่อ พนักงานขับรถ</label>
+                                <button onclick="clearSignature('driver')" class="text-red-500 hover:text-red-700 text-[11px] underline">
+                                    <i class="fa fa-eraser"></i> ล้างลายเซ็น
+                                </button>
+                            </div>
+                            <canvas id="canvas_driver" width="300" height="90" class="signature-canvas w-full"></canvas>
+                        </div>
+
+                        <!-- เซ็นชื่อ หัวหน้าชุดเวร -->
+                        <div class="border p-2 bg-white rounded space-y-1">
+                            <div class="grid grid-cols-2 gap-2 mb-1">
+                                <input type="text" id="input_head_name" oninput="updatePreview()" placeholder="ชื่อหัวหน้าชุดเวร" class="p-1.5 border rounded">
+                                <input type="text" id="input_head_pos" oninput="updatePreview()" placeholder="ตำแหน่งหัวหน้าชุดเวร" class="p-1.5 border rounded">
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <label class="font-bold text-gray-700">ลายมือชื่อ หัวหน้าชุดเวรเตรียมพร้อม</label>
+                                <button onclick="clearSignature('head')" class="text-red-500 hover:text-red-700 text-[11px] underline">
+                                    <i class="fa fa-eraser"></i> ล้างลายเซ็น
+                                </button>
+                            </div>
+                            <canvas id="canvas_head" width="300" height="90" class="signature-canvas w-full"></canvas>
                         </div>
                     </div>
                 </div>
 
                 <button onclick="printPDF()" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded shadow transition flex items-center justify-center">
-                    <i class="fa fa-file-pdf-o text-lg mr-2"></i> สั่งพิมพ์เอกสาร / บันทึกเป็น PDF
+                    <i class="fa fa-file-pdf-o text-lg mr-2"></i> สั่งพิมพ์เอกสาร / บันทึกเป็น PDF (1 หน้า)
                 </button>
             </div>
 
-            <!-- ฝั่งขวา: ตัวอย่างเอกสาร A4 (พอดี 1 หน้าพอดี) -->
+            <!-- ฝั่งขวา: ตัวอย่างเอกสาร A4 -->
             <div class="lg:col-span-7 flex justify-center overflow-x-auto">
                 <div id="pdf-content" class="a4-document">
                     
-                    <!-- หัวกระดาษ (แก้ไขข้อความตามที่แจ้ง) -->
+                    <!-- หัวกระดาษ -->
                     <div class="text-center font-bold mb-2">
                         <div class="text-xl">รายงานการใช้รถยนต์ออกปฎิบัติงาน</div>
                         <div class="text-lg">ฝ่ายปกครอง สำนักปลัดเทศบาล เทศบาลนครนครราชสีมา</div>
@@ -295,8 +327,12 @@
                     </div>
 
                     <!-- ลงชื่อพนักงานขับรถ -->
-                    <div class="mt-3 flex justify-end">
-                        <div class="text-center w-72 space-y-0.5">
+                    <div class="mt-2 flex justify-end">
+                        <div class="text-center w-72 relative">
+                            <!-- ภาพลายเซ็น พนักงานขับรถ -->
+                            <div class="h-10 flex items-end justify-center mb-[-8px]">
+                                <img id="img_sign_driver" class="max-h-12 object-contain hidden" alt="ลายเซ็นพนักงานขับรถ">
+                            </div>
                             <div>ลงชื่อ ....................................................... พนักงานขับรถ</div>
                             <div>( <span id="view_reporter_sign" class="dotted-line min-w-[170px]"></span> )</div>
                             <div>ตำแหน่ง <span id="view_position_sign" class="dotted-line min-w-[170px]"></span></div>
@@ -304,7 +340,7 @@
                     </div>
 
                     <!-- ส่วนเสนอรายงาน -->
-                    <div class="mt-2 pt-1">
+                    <div class="mt-1 pt-1">
                         <div class="font-bold">
                             เรียน <span id="view_recipient">หัวหน้างานศูนย์ป้องกันและบรรเทาสาธารณภัย</span>
                         </div>
@@ -312,8 +348,12 @@
                             ............................................................................................................................................................................
                         </div>
 
-                        <div class="mt-2 flex justify-end">
-                            <div class="text-center w-72 space-y-0.5">
+                        <div class="mt-1 flex justify-end">
+                            <div class="text-center w-72 relative">
+                                <!-- ภาพลายเซ็น หัวหน้าชุดเวร -->
+                                <div class="h-10 flex items-end justify-center mb-[-8px]">
+                                    <img id="img_sign_head" class="max-h-12 object-contain hidden" alt="ลายเซ็นหัวหน้าชุดเวร">
+                                </div>
                                 <div>ลงชื่อ ....................................................... หัวหน้าชุดเวรเตรียมพร้อม</div>
                                 <div>( <span id="view_head_name" class="dotted-line min-w-[170px]"></span> )</div>
                                 <div>ตำแหน่ง <span id="view_head_pos" class="dotted-line min-w-[170px]"></span></div>
@@ -328,6 +368,108 @@
     </div>
 
     <script>
+        // ระบบจัดการ Canvas ลายเซ็น
+        class SignaturePadManager {
+            constructor(canvasId, imgTargetId) {
+                this.canvas = document.getElementById(canvasId);
+                this.ctx = this.canvas.getContext('2d');
+                this.imgTarget = document.getElementById(imgTargetId);
+                this.isDrawing = false;
+                this.hasSignature = false;
+
+                this.ctx.lineWidth = 2;
+                this.ctx.strokeStyle = '#000000';
+                this.ctx.lineCap = 'round';
+
+                this.initEvents();
+            }
+
+            initEvents() {
+                // Mouse Events
+                this.canvas.addEventListener('mousedown', (e) => this.startDrawing(e));
+                this.canvas.addEventListener('mousemove', (e) => this.draw(e));
+                this.canvas.addEventListener('mouseup', () => this.stopDrawing());
+                this.canvas.addEventListener('mouseleave', () => this.stopDrawing());
+
+                // Touch Events (สำหรับมือถือ/แท็บเล็ต)
+                this.canvas.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    const touch = e.touches[0];
+                    this.startDrawing(touch);
+                });
+                this.canvas.addEventListener('touchmove', (e) => {
+                    e.preventDefault();
+                    const touch = e.touches[0];
+                    this.draw(touch);
+                });
+                this.canvas.addEventListener('touchend', () => this.stopDrawing());
+            }
+
+            getPos(e) {
+                const rect = this.canvas.getBoundingClientRect();
+                return {
+                    x: (e.clientX - rect.left) * (this.canvas.width / rect.width),
+                    y: (e.clientY - rect.top) * (this.canvas.height / rect.height)
+                };
+            }
+
+            startDrawing(e) {
+                this.isDrawing = true;
+                const pos = this.getPos(e);
+                this.ctx.beginPath();
+                this.ctx.moveTo(pos.x, pos.y);
+            }
+
+            draw(e) {
+                if (!this.isDrawing) return;
+                const pos = this.getPos(e);
+                this.ctx.lineTo(pos.x, pos.y);
+                this.ctx.stroke();
+                this.hasSignature = true;
+                this.updatePreviewImage();
+            }
+
+            stopDrawing() {
+                if (this.isDrawing) {
+                    this.isDrawing = false;
+                    this.updatePreviewImage();
+                }
+            }
+
+            clear() {
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                this.hasSignature = false;
+                this.imgTarget.src = '';
+                this.imgTarget.classList.add('hidden');
+            }
+
+            updatePreviewImage() {
+                if (this.hasSignature) {
+                    const dataUrl = this.canvas.toDataURL('image/png');
+                    this.imgTarget.src = dataUrl;
+                    this.imgTarget.classList.remove('hidden');
+                }
+            }
+
+            getData() {
+                return this.hasSignature ? this.canvas.toDataURL('image/png') : '';
+            }
+
+            loadData(dataUrl) {
+                if (!dataUrl) return;
+                const img = new Image();
+                img.onload = () => {
+                    this.clear();
+                    this.ctx.drawImage(img, 0, 0);
+                    this.hasSignature = true;
+                    this.updatePreviewImage();
+                };
+                img.src = dataUrl;
+            }
+        }
+
+        let sigDriver, sigHead;
+
         function updatePreview() {
             const fields = [
                 'reporter', 'position', 'car_type', 'plate', 'date', 'task',
@@ -347,6 +489,11 @@
             document.getElementById('view_recipient').textContent = document.getElementById('input_recipient').value;
         }
 
+        function clearSignature(type) {
+            if (type === 'driver') sigDriver.clear();
+            if (type === 'head') sigHead.clear();
+        }
+
         function printPDF() {
             if (!document.getElementById('input_reporter').value) {
                 Swal.fire({ icon: 'warning', title: 'กรุณากรอกข้อมูล', text: 'กรุณากรอกชื่อผู้รายงานอย่างน้อย 1 รายการก่อนสั่งพิมพ์' });
@@ -360,6 +507,11 @@
             document.querySelectorAll('input, textarea, select').forEach(input => {
                 if (input.id) formData[input.id] = input.value;
             });
+
+            // เพิ่มข้อมูลลายเซ็นลงในร่าง
+            formData['sig_driver_data'] = sigDriver.getData();
+            formData['sig_head_data'] = sigHead.getData();
+
             localStorage.setItem('korat_car_report_draft', JSON.stringify(formData));
             Swal.fire({ icon: 'success', title: 'บันทึกแบบร่างสำเร็จ', timer: 1500, showConfirmButton: false });
         }
@@ -375,11 +527,20 @@
                 const elem = document.getElementById(id);
                 if (elem) elem.value = formData[id];
             });
+
+            if (formData['sig_driver_data']) sigDriver.loadData(formData['sig_driver_data']);
+            if (formData['sig_head_data']) sigHead.loadData(formData['sig_head_data']);
+
             updatePreview();
             Swal.fire({ icon: 'success', title: 'โหลดข้อมูลสำเร็จ', timer: 1500, showConfirmButton: false });
         }
 
         window.addEventListener('DOMContentLoaded', () => {
+            // ริเริ่ม Canvas ลายเซ็น
+            sigDriver = new SignaturePadManager('canvas_driver', 'img_sign_driver');
+            sigHead = new SignaturePadManager('canvas_head', 'img_sign_head');
+
+            // วันที่ปัจจุบันในไทย
             const today = new Date();
             const thaiMonths = ['มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน', 'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'];
             document.getElementById('input_date').value = `${today.getDate()} ${thaiMonths[today.getMonth()]} ${today.getFullYear() + 543}`;
