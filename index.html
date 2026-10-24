@@ -8,34 +8,24 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <!-- TH Sarabun New Font via Google Fonts & Fontsource CDN -->
+    <!-- Google Fonts: Sarabun -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css">
 
     <style>
-        /* นำเข้า TH Sarabun New Font */
+        /* กำหนดฟอนต์ TH Sarabun New และ Sarabun */
         @font-face {
             font-family: 'THSarabunNew';
-            src: url('https://cdn.jsdelivr.net/gh/lazywasabi/thai-web-fonts@2.0/fonts/THSarabunNew/THSarabunNew.woff2') format('woff2'),
-                 url('https://cdn.jsdelivr.net/gh/lazywasabi/thai-web-fonts@2.0/fonts/THSarabunNew/THSarabunNew.woff') format('woff');
+            src: url('https://cdn.jsdelivr.net/gh/lazywasabi/thai-web-fonts@2.0/fonts/THSarabunNew/THSarabunNew.woff2') format('woff2');
             font-weight: normal;
             font-style: normal;
             font-display: swap;
         }
 
-        @font-face {
-            font-family: 'THSarabunNew';
-            src: url('https://cdn.jsdelivr.net/gh/lazywasabi/thai-web-fonts@2.0/fonts/THSarabunNew/THSarabunNew-Bold.woff2') format('woff2'),
-                 url('https://cdn.jsdelivr.net/gh/lazywasabi/thai-web-fonts@2.0/fonts/THSarabunNew/THSarabunNew-Bold.woff') format('woff');
-            font-weight: bold;
-            font-style: normal;
-            font-display: swap;
-        }
-
         body {
-            font-family: 'Sarabun', 'THSarabunNew', sans-serif;
+            font-family: 'Sarabun', sans-serif;
             background-color: #f3f4f6;
         }
 
@@ -43,13 +33,13 @@
         .a4-document {
             font-family: 'THSarabunNew', 'Sarabun', sans-serif !important;
             font-size: 16pt !important;
-            line-height: 1.4 !important;
+            line-height: 1.35 !important;
             width: 210mm;
             min-height: 297mm;
-            padding: 20mm 15mm 20mm 20mm;
+            padding: 15mm 15mm 15mm 20mm;
             margin: auto;
             background: white;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
             box-sizing: border-box;
             color: #000;
         }
@@ -59,127 +49,118 @@
             display: inline-block;
             padding: 0 4px;
             text-align: center;
-            min-height: 1.3em;
+            min-height: 1.2em;
             word-break: break-all;
         }
 
         /* การตั้งค่าสำหรับการพิมพ์ PDF / พิมพ์ออกกระดาษ */
         @media print {
-            @page {
-                size: A4 portrait;
-                margin: 0;
+            body * {
+                visibility: hidden;
             }
-            body {
-                background: white !important;
+            #pdf-content, #pdf-content * {
+                visibility: visible;
+            }
+            #pdf-content {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100% !important;
                 margin: 0 !important;
-                padding: 0 !important;
-                -webkit-print-color-adjust: exact;
-                print-color-adjust: exact;
+                padding: 10mm 15mm 10mm 20mm !important;
+                box-shadow: none !important;
             }
             .no-print {
                 display: none !important;
-            }
-            .print-only {
-                display: block !important;
-            }
-            .a4-document {
-                box-shadow: none !important;
-                margin: 0 !important;
-                width: 100% !important;
-                height: 100% !important;
-                padding: 18mm 15mm 15mm 20mm !important;
-                page-break-after: avoid;
-                page-break-inside: avoid;
             }
         }
     </style>
 </head>
 <body class="bg-gray-100 min-h-screen">
 
-    <!-- Header หน้าเว็บ (ไม่แสดงเวลาพิมพ์) -->
+    <!-- Header หน้าเว็บ -->
     <header class="no-print bg-blue-900 text-white shadow-lg sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 py-3 sm:px-6 lg:px-8 flex flex-wrap justify-between items-center">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap justify-between items-center">
             <div class="flex items-center space-x-3">
                 <i class="fa fa-car text-amber-400 text-2xl"></i>
                 <div>
-                    <h1 class="text-lg sm:text-xl font-bold tracking-wide">ระบบรายงานการใช้รถยนต์ออกปฏิบัติงาน</h1>
+                    <h1 class="text-lg font-bold">ระบบรายงานการใช้รถยนต์ออกปฏิบัติงาน</h1>
                     <p class="text-xs text-blue-200">ฝ่ายปกครอง สำนักปลัดเทศบาล เทศบาลนครนครราชสีมา</p>
                 </div>
             </div>
-            <div class="mt-2 sm:mt-0 flex space-x-2">
-                <button onclick="saveDraft()" class="bg-amber-500 hover:bg-amber-600 text-white text-sm px-3 py-1.5 rounded transition flex items-center shadow">
-                    <i class="fa fa-save mr-1.5"></i> บันทึกร่าง
+            <div class="flex space-x-2 mt-2 sm:mt-0">
+                <button onclick="saveDraft()" class="bg-amber-500 hover:bg-amber-600 text-white text-sm px-3 py-1.5 rounded flex items-center shadow">
+                    <i class="fa fa-save mr-1"></i> บันทึกร่าง
                 </button>
-                <button onclick="loadDraft()" class="bg-blue-700 hover:bg-blue-800 text-white text-sm px-3 py-1.5 rounded transition flex items-center shadow">
-                    <i class="fa fa-folder-open mr-1.5"></i> ดึงร่างเดิม
+                <button onclick="loadDraft()" class="bg-blue-700 hover:bg-blue-800 text-white text-sm px-3 py-1.5 rounded flex items-center shadow">
+                    <i class="fa fa-folder-open mr-1"></i> ดึงร่างเดิม
                 </button>
-                <button onclick="printPDF()" class="bg-green-600 hover:bg-green-700 text-white text-sm px-3 py-1.5 rounded font-semibold transition flex items-center shadow">
-                    <i class="fa fa-print mr-1.5"></i> พิมพ์ / บันทึก PDF
+                <button onclick="printPDF()" class="bg-green-600 hover:bg-green-700 text-white text-sm px-3 py-1.5 rounded font-semibold flex items-center shadow">
+                    <i class="fa fa-print mr-1"></i> พิมพ์ / บันทึก PDF
                 </button>
             </div>
         </div>
     </header>
 
-    <!-- คอนเทนเนอร์หลัก -->
     <div class="max-w-7xl mx-auto px-2 sm:px-4 py-6">
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
 
-            <!-- ฝั่งซ้าย: ฟอร์มกรอกข้อมูล (ไม่แสดงเวลาพิมพ์) -->
-            <div class="no-print lg:col-span-5 bg-white p-5 rounded-lg shadow-md border border-gray-200 space-y-4 max-h-[calc(100vh-100px)] overflow-y-auto">
+            <!-- ฝั่งซ้าย: ฟอร์มกรอกข้อมูล -->
+            <div class="no-print lg:col-span-5 bg-white p-5 rounded-lg shadow-md border space-y-4 max-h-[calc(100vh-100px)] overflow-y-auto">
                 <h2 class="text-base font-bold text-gray-800 border-b pb-2 flex items-center">
                     <i class="fa fa-edit text-blue-600 mr-2"></i> กรอกข้อมูล รายงานการใช้รถยนต์
                 </h2>
 
-                <!-- 1. ข้อมูลผู้ส่งรายงานและรถยนต์ -->
-                <div class="bg-gray-50 p-3 rounded border border-gray-200 space-y-3">
+                <!-- 1. ผู้รายงานและรถยนต์ -->
+                <div class="bg-gray-50 p-3 rounded border space-y-2">
                     <h3 class="font-semibold text-sm text-blue-800">1. ผู้รายงานและรถยนต์</h3>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
                         <div>
-                            <label class="block text-gray-700 text-xs font-bold mb-1">ชื่อ-สกุล ข้าพเจ้า *</label>
-                            <input type="text" id="input_reporter" oninput="updatePreview()" placeholder="นายสมชาย ใจดี" class="w-full p-2 border rounded text-xs focus:ring-1 focus:ring-blue-500">
+                            <label class="block font-bold mb-1">ชื่อ-สกุล ข้าพเจ้า *</label>
+                            <input type="text" id="input_reporter" oninput="updatePreview()" placeholder="นายสมชาย ใจดี" class="w-full p-2 border rounded">
                         </div>
                         <div>
-                            <label class="block text-gray-700 text-xs font-bold mb-1">ตำแหน่ง *</label>
-                            <input type="text" id="input_position" oninput="updatePreview()" placeholder="พนักงานขับรถยนต์" class="w-full p-2 border rounded text-xs focus:ring-1 focus:ring-blue-500">
+                            <label class="block font-bold mb-1">ตำแหน่ง *</label>
+                            <input type="text" id="input_position" oninput="updatePreview()" placeholder="พนักงานขับรถยนต์" class="w-full p-2 border rounded">
                         </div>
                         <div>
-                            <label class="block text-gray-700 text-xs font-bold mb-1">ทำหน้าที่ขับรถยนต์ *</label>
-                            <input type="text" id="input_car_type" oninput="updatePreview()" placeholder="ดับเพลิง / ตระเวน" class="w-full p-2 border rounded text-xs focus:ring-1 focus:ring-blue-500">
+                            <label class="block font-bold mb-1">ทำหน้าที่ขับรถยนต์ *</label>
+                            <input type="text" id="input_car_type" oninput="updatePreview()" placeholder="ดับเพลิง" class="w-full p-2 border rounded">
                         </div>
                         <div>
-                            <label class="block text-gray-700 text-xs font-bold mb-1">หมายเลขทะเบียน *</label>
-                            <input type="text" id="input_plate" oninput="updatePreview()" placeholder="กข-1234 นครราชสีมา" class="w-full p-2 border rounded text-xs focus:ring-1 focus:ring-blue-500">
+                            <label class="block font-bold mb-1">หมายเลขทะเบียน *</label>
+                            <input type="text" id="input_plate" oninput="updatePreview()" placeholder="กข-1234 นม." class="w-full p-2 border rounded">
                         </div>
                     </div>
                 </div>
 
-                <!-- 2. ข้อมูลการปฏิบัติงาน -->
-                <div class="bg-gray-50 p-3 rounded border border-gray-200 space-y-3">
+                <!-- 2. การปฏิบัติงาน -->
+                <div class="bg-gray-50 p-3 rounded border space-y-2">
                     <h3 class="font-semibold text-sm text-blue-800">2. การปฏิบัติงานและเวลา</h3>
-                    <div class="space-y-2 text-sm">
+                    <div class="text-xs space-y-2">
                         <div>
-                            <label class="block text-gray-700 text-xs font-bold mb-1">วันที่ปฏิบัติงาน *</label>
-                            <input type="text" id="input_date" oninput="updatePreview()" placeholder="24 ตุลาคม 2569" class="w-full p-2 border rounded text-xs focus:ring-1 focus:ring-blue-500">
+                            <label class="block font-bold mb-1">วันที่ปฏิบัติงาน *</label>
+                            <input type="text" id="input_date" oninput="updatePreview()" class="w-full p-2 border rounded">
                         </div>
                         <div>
-                            <label class="block text-gray-700 text-xs font-bold mb-1">ได้นำรถออกปฏิบัติงาน *</label>
-                            <textarea id="input_task" oninput="updatePreview()" rows="3" placeholder="ระบุภารกิจการนำรถออกปฏิบัติงาน..." class="w-full p-2 border rounded text-xs focus:ring-1 focus:ring-blue-500"></textarea>
+                            <label class="block font-bold mb-1">ได้นำรถออกปฏิบัติงาน *</label>
+                            <textarea id="input_task" oninput="updatePreview()" rows="2" placeholder="ระบุภารกิจ..." class="w-full p-2 border rounded"></textarea>
                         </div>
                         <div class="grid grid-cols-2 gap-2">
                             <div>
-                                <label class="block text-gray-700 text-xs font-bold mb-1">ตั้งแต่วิเวลา (น.)</label>
-                                <input type="text" id="input_start_time" oninput="updatePreview()" placeholder="08.30" class="w-full p-2 border rounded text-xs focus:ring-1 focus:ring-blue-500">
+                                <label class="block font-bold mb-1">ตั้งแต่เวลา (น.)</label>
+                                <input type="text" id="input_start_time" oninput="updatePreview()" placeholder="08.30" class="w-full p-2 border rounded">
                             </div>
                             <div>
-                                <label class="block text-gray-700 text-xs font-bold mb-1">ถึงเวลา (น.)</label>
-                                <input type="text" id="input_end_time" oninput="updatePreview()" placeholder="16.30" class="w-full p-2 border rounded text-xs focus:ring-1 focus:ring-blue-500">
+                                <label class="block font-bold mb-1">ถึงเวลา (น.)</label>
+                                <input type="text" id="input_end_time" oninput="updatePreview()" placeholder="16.30" class="w-full p-2 border rounded">
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- 3. รายชื่อผู้ร่วมปฏิบัติงาน -->
-                <div class="bg-gray-50 p-3 rounded border border-gray-200 space-y-2">
+                <!-- 3. ผู้ร่วมปฏิบัติงาน -->
+                <div class="bg-gray-50 p-3 rounded border space-y-2">
                     <h3 class="font-semibold text-sm text-blue-800">3. ผู้ร่วมปฏิบัติงาน (6 ท่าน)</h3>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
                         <input type="text" id="input_team_1" oninput="updatePreview()" placeholder="1. ชื่อ-นามสกุล" class="p-1.5 border rounded">
@@ -192,77 +173,67 @@
                 </div>
 
                 <!-- 4. พนักงานไม่ออกร่วมปฏิบัติงาน -->
-                <div class="bg-gray-50 p-3 rounded border border-gray-200 space-y-2">
+                <div class="bg-gray-50 p-3 rounded border space-y-2">
                     <h3 class="font-semibold text-sm text-blue-800">4. พนักงานประจำรถไม่ออกร่วมปฏิบัติงาน</h3>
-                    <div class="space-y-2 text-xs">
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-1">
-                            <input type="text" id="input_absent_1" oninput="updatePreview()" placeholder="1. ชื่อ-นามสกุล" class="p-1.5 border rounded">
-                            <input type="text" id="input_reason_1" oninput="updatePreview()" placeholder="สาเหตุเนื่องจาก" class="p-1.5 border rounded">
+                    <div class="space-y-1 text-xs">
+                        <div class="grid grid-cols-2 gap-1">
+                            <input type="text" id="input_absent_1" oninput="updatePreview()" placeholder="1. ชื่อ" class="p-1.5 border rounded">
+                            <input type="text" id="input_reason_1" oninput="updatePreview()" placeholder="สาเหตุ" class="p-1.5 border rounded">
                         </div>
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-1">
-                            <input type="text" id="input_absent_2" oninput="updatePreview()" placeholder="2. ชื่อ-นามสกุล" class="p-1.5 border rounded">
-                            <input type="text" id="input_reason_2" oninput="updatePreview()" placeholder="สาเหตุเนื่องจาก" class="p-1.5 border rounded">
+                        <div class="grid grid-cols-2 gap-1">
+                            <input type="text" id="input_absent_2" oninput="updatePreview()" placeholder="2. ชื่อ" class="p-1.5 border rounded">
+                            <input type="text" id="input_reason_2" oninput="updatePreview()" placeholder="สาเหตุ" class="p-1.5 border rounded">
                         </div>
                     </div>
                 </div>
 
                 <!-- 5. ผลและอุปสรรค -->
-                <div class="bg-gray-50 p-3 rounded border border-gray-200 space-y-2">
+                <div class="bg-gray-50 p-3 rounded border space-y-2">
                     <h3 class="font-semibold text-sm text-blue-800">5. ผลการปฏิบัติงานและอุปสรรค</h3>
-                    <div>
-                        <label class="block text-gray-700 text-xs font-bold mb-1">ผลการปฏิบัติงาน</label>
-                        <textarea id="input_result" oninput="updatePreview()" rows="2" placeholder="เหตุการณ์เรียบร้อย การปฏิบัติงานสำเร็จลุล่วง..." class="w-full p-2 border rounded text-xs focus:ring-1 focus:ring-blue-500"></textarea>
-                    </div>
-                    <div>
-                        <label class="block text-gray-700 text-xs font-bold mb-1">อุปสรรคและปัญหา</label>
-                        <textarea id="input_obstacle" oninput="updatePreview()" rows="2" placeholder="ไม่มี / สภาพการจราจรหนาแน่น..." class="w-full p-2 border rounded text-xs focus:ring-1 focus:ring-blue-500"></textarea>
+                    <div class="text-xs space-y-2">
+                        <textarea id="input_result" oninput="updatePreview()" rows="2" placeholder="ผลการปฏิบัติงาน..." class="w-full p-2 border rounded"></textarea>
+                        <textarea id="input_obstacle" oninput="updatePreview()" rows="2" placeholder="อุปสรรคและปัญหา..." class="w-full p-2 border rounded"></textarea>
                     </div>
                 </div>
 
-                <!-- 6. ตัวเลือกผู้รับรายงาน -->
-                <div class="bg-gray-50 p-3 rounded border border-gray-200 space-y-2">
+                <!-- 6. ผู้รับรายงาน -->
+                <div class="bg-gray-50 p-3 rounded border space-y-2">
                     <h3 class="font-semibold text-sm text-blue-800">6. การเสนอรายงานและลงนาม</h3>
-                    <div>
-                        <label class="block text-gray-700 text-xs font-bold mb-1">เรียน (ผู้รับรายงาน) *</label>
-                        <select id="input_recipient" onchange="updatePreview()" class="w-full p-2 border rounded text-xs font-semibold text-blue-900 bg-white focus:ring-1 focus:ring-blue-500">
-                            <option value="หัวหน้างานศูนย์ป้องกันและบรรเทาสาธารณภัย">หัวหน้างานศูนย์ป้องกันและบรรเทาสาธารณภัย</option>
-                            <option value="หัวหน้าสถานีดับเพลิงสุรนารายณ์">หัวหน้าสถานีดับเพลิงสุรนารายณ์</option>
-                            <option value="สถานีดับเพลิงการเคหะฯ">สถานีดับเพลิงการเคหะฯ</option>
-                            <option value="สถานีดับเพลิงศาลาทอง">สถานีดับเพลิงศาลาทอง</option>
-                            <option value="สถานีดับเพลิงจามจุรี">สถานีดับเพลิงจามจุรี</option>
-                        </select>
-                    </div>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs pt-1">
+                    <div class="text-xs space-y-2">
                         <div>
-                            <label class="block text-gray-700 font-bold mb-1">ชื่อหัวหน้าชุดเวรเตรียมพร้อม</label>
-                            <input type="text" id="input_head_name" oninput="updatePreview()" placeholder="นายวิชัย มั่นคง" class="w-full p-1.5 border rounded">
+                            <label class="block font-bold mb-1">เรียน (ผู้รับรายงาน) *</label>
+                            <select id="input_recipient" onchange="updatePreview()" class="w-full p-2 border rounded font-semibold text-blue-900 bg-white">
+                                <option value="หัวหน้างานศูนย์ป้องกันและบรรเทาสาธารณภัย">หัวหน้างานศูนย์ป้องกันและบรรเทาสาธารณภัย</option>
+                                <option value="หัวหน้าสถานีดับเพลิงสุรนารายณ์">หัวหน้าสถานีดับเพลิงสุรนารายณ์</option>
+                                <option value="สถานีดับเพลิงการเคหะฯ">สถานีดับเพลิงการเคหะฯ</option>
+                                <option value="สถานีดับเพลิงศาลาทอง">สถานีดับเพลิงศาลาทอง</option>
+                                <option value="สถานีดับเพลิงจามจุรี">สถานีดับเพลิงจามจุรี</option>
+                            </select>
                         </div>
-                        <div>
-                            <label class="block text-gray-700 font-bold mb-1">ตำแหน่งหัวหน้าชุดเวร</label>
-                            <input type="text" id="input_head_pos" oninput="updatePreview()" placeholder="หัวหน้าชุดเวรปฏิบัติการ" class="w-full p-1.5 border rounded">
+                        <div class="grid grid-cols-2 gap-2">
+                            <input type="text" id="input_head_name" oninput="updatePreview()" placeholder="ชื่อหัวหน้าชุดเวร" class="p-1.5 border rounded">
+                            <input type="text" id="input_head_pos" oninput="updatePreview()" placeholder="ตำแหน่งหัวหน้าชุดเวร" class="p-1.5 border rounded">
                         </div>
                     </div>
                 </div>
 
-                <div class="pt-2">
-                    <button onclick="printPDF()" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded shadow transition text-center flex items-center justify-center">
-                        <i class="fa fa-file-pdf-o text-lg mr-2"></i> สั่งพิมพ์เอกสาร / บันทึกเป็น PDF
-                    </button>
-                </div>
+                <button onclick="printPDF()" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded shadow transition flex items-center justify-center">
+                    <i class="fa fa-file-pdf-o text-lg mr-2"></i> สั่งพิมพ์เอกสาร / บันทึกเป็น PDF
+                </button>
             </div>
 
-            <!-- ฝั่งขวา: ตัวอย่างเอกสาร A4 (แสดงทั้งบนเว็บและตอนพิมพ์) -->
+            <!-- ฝั่งขวา: ตัวอย่างเอกสาร A4 -->
             <div class="lg:col-span-7 flex justify-center overflow-x-auto">
                 <div id="pdf-content" class="a4-document">
                     
                     <!-- หัวกระดาษ -->
-                    <div class="text-center font-bold mb-4">
+                    <div class="text-center font-bold mb-3">
                         <div class="text-xl">รายงานการใช้รถยนต์ออกปฎิบัติงาน</div>
                         <div class="text-lg">ฝ่ายปกครอง สำนักปลัดเทศบาล เทศบาลนครนครราชสีมา</div>
                         <div class="tracking-widest overflow-hidden leading-none mt-1">........................................................................................................................................................</div>
                     </div>
 
-                    <!-- ส่วนเนื้อหาเอกสาร -->
+                    <!-- เนื้อหา -->
                     <div class="space-y-1 text-justify">
                         <div class="indent-12">
                             ข้าพเจ้า <span id="view_reporter" class="dotted-line min-w-[200px]"></span>
@@ -273,7 +244,7 @@
                             ทำหน้าที่ขับรถยนต์ <span id="view_car_type" class="dotted-line min-w-[150px]"></span>
                             หมายเลขทะเบียน <span id="view_plate" class="dotted-line min-w-[150px]"></span>
                             ในวันที่ <span id="view_date" class="dotted-line min-w-[160px]"></span>
-                            ได้นำรถออกปฎิบัติงาน <span id="view_task" class="dotted-line w-full min-h-[4.2em] whitespace-pre-wrap leading-relaxed"></span>
+                            ได้นำรถออกปฎิบัติงาน <span id="view_task" class="dotted-line w-full min-h-[3.5em] whitespace-pre-wrap"></span>
                         </div>
 
                         <div class="indent-12 pt-1">
@@ -282,44 +253,29 @@
                             มีร่วมผู้ปฎิบัติงานดังนี้
                         </div>
 
-                        <!-- รายชื่อผู้ร่วมปฏิบัติงาน -->
+                        <!-- ผู้ร่วมปฏิบัติงาน -->
                         <div class="grid grid-cols-2 gap-x-4 pl-4 py-1">
-                            <div>1. <span id="view_team_1" class="dotted-line min-w-[200px]"></span></div>
-                            <div>2. <span id="view_team_2" class="dotted-line min-w-[200px]"></span></div>
-                            <div>3. <span id="view_team_3" class="dotted-line min-w-[200px]"></span></div>
-                            <div>4. <span id="view_team_4" class="dotted-line min-w-[200px]"></span></div>
-                            <div>5. <span id="view_team_5" class="dotted-line min-w-[200px]"></span></div>
-                            <div>6. <span id="view_team_6" class="dotted-line min-w-[200px]"></span></div>
+                            <div>1. <span id="view_team_1" class="dotted-line min-w-[190px]"></span></div>
+                            <div>2. <span id="view_team_2" class="dotted-line min-w-[190px]"></span></div>
+                            <div>3. <span id="view_team_3" class="dotted-line min-w-[190px]"></span></div>
+                            <div>4. <span id="view_team_4" class="dotted-line min-w-[190px]"></span></div>
+                            <div>5. <span id="view_team_5" class="dotted-line min-w-[190px]"></span></div>
+                            <div>6. <span id="view_team_6" class="dotted-line min-w-[190px]"></span></div>
                         </div>
 
                         <!-- พนักงานไม่ออกร่วมปฏิบัติงาน -->
-                        <div class="indent-12 pt-1">
-                            พนักงานประจำรถไม่ออกร่วมปฎิบัติงาน มีดังนี้
-                        </div>
+                        <div class="indent-12 pt-1">พนักงานประจำรถไม่ออกร่วมปฎิบัติงาน มีดังนี้</div>
                         <div class="pl-4 space-y-1">
-                            <div>
-                                1. <span id="view_absent_1" class="dotted-line min-w-[200px]"></span>
-                                สาเหตุเนื่องจาก <span id="view_reason_1" class="dotted-line min-w-[230px]"></span>
-                            </div>
-                            <div>
-                                2. <span id="view_absent_2" class="dotted-line min-w-[200px]"></span>
-                                สาเหตุเนื่องจาก <span id="view_reason_2" class="dotted-line min-w-[230px]"></span>
-                            </div>
+                            <div>1. <span id="view_absent_1" class="dotted-line min-w-[180px]"></span> สาเหตุเนื่องจาก <span id="view_reason_1" class="dotted-line min-w-[210px]"></span></div>
+                            <div>2. <span id="view_absent_2" class="dotted-line min-w-[180px]"></span> สาเหตุเนื่องจาก <span id="view_reason_2" class="dotted-line min-w-[210px]"></span></div>
                         </div>
 
-                        <!-- ผลการปฏิบัติงาน -->
-                        <div class="pt-1">
-                            ผลการปฏิบัติงาน <span id="view_result" class="dotted-line w-full min-h-[3em] whitespace-pre-wrap leading-relaxed"></span>
-                        </div>
-
-                        <!-- อุปสรรคและปัญหา -->
-                        <div class="pt-1">
-                            อุปสรรคและปัญหา <span id="view_obstacle" class="dotted-line w-full min-h-[3em] whitespace-pre-wrap leading-relaxed"></span>
-                        </div>
+                        <div class="pt-1">ผลการปฏิบัติงาน <span id="view_result" class="dotted-line w-full min-h-[2.5em] whitespace-pre-wrap"></span></div>
+                        <div class="pt-1">อุปสรรคและปัญหา <span id="view_obstacle" class="dotted-line w-full min-h-[2.5em] whitespace-pre-wrap"></span></div>
                     </div>
 
-                    <!-- ส่วนลงนามพนักงานขับรถ -->
-                    <div class="mt-6 flex justify-end">
+                    <!-- ลงชื่อพนักงานขับรถ -->
+                    <div class="mt-4 flex justify-end">
                         <div class="text-center w-72 space-y-1">
                             <div>ลงชื่อ ....................................................... พนักงานขับรถ</div>
                             <div>( <span id="view_reporter_sign" class="dotted-line min-w-[180px]"></span> )</div>
@@ -327,16 +283,16 @@
                         </div>
                     </div>
 
-                    <!-- ส่วนลงนามผู้รับรายงาน (เรียน...) -->
-                    <div class="mt-4 pt-2 border-t border-transparent">
+                    <!-- ส่วนเสนอรายงาน -->
+                    <div class="mt-3 pt-1">
                         <div class="font-bold">
-                            เรียน <span id="view_recipient" class="text-black">หัวหน้างานศูนย์ป้องกันและบรรเทาสาธารณภัย</span>
+                            เรียน <span id="view_recipient">หัวหน้างานศูนย์ป้องกันและบรรเทาสาธารณภัย</span>
                         </div>
-                        <div class="pl-8 min-h-[2em]">
+                        <div class="pl-6 min-h-[1.5em]">
                             ............................................................................................................................................................................
                         </div>
 
-                        <div class="mt-4 flex justify-end">
+                        <div class="mt-3 flex justify-end">
                             <div class="text-center w-72 space-y-1">
                                 <div>ลงชื่อ ....................................................... หัวหน้าชุดเวรเตรียมพร้อม</div>
                                 <div>( <span id="view_head_name" class="dotted-line min-w-[180px]"></span> )</div>
@@ -351,9 +307,7 @@
         </div>
     </div>
 
-    <!-- JavaScript สคริปต์สำหรับจัดการข้อมูลและการพิมพ์ -->
     <script>
-        // อัปเดตข้อมูลจาก Form ไปยังตัวอย่างเอกสาร A4 แบบ Real-time
         function updatePreview() {
             const fields = [
                 'reporter', 'position', 'car_type', 'plate', 'date', 'task',
@@ -365,98 +319,50 @@
             fields.forEach(id => {
                 const inputVal = document.getElementById('input_' + id)?.value || '';
                 const viewElem = document.getElementById('view_' + id);
-                if (viewElem) {
-                    viewElem.textContent = inputVal;
-                }
+                if (viewElem) viewElem.textContent = inputVal;
             });
 
-            // อัปเดตการลงนาม
-            const reporterName = document.getElementById('input_reporter').value;
-            const reporterPos = document.getElementById('input_position').value;
-            document.getElementById('view_reporter_sign').textContent = reporterName;
-            document.getElementById('view_position_sign').textContent = reporterPos;
-
-            // อัปเดตการเสนอรายงาน "เรียน (ผู้รับรายงาน)"
-            const recipientVal = document.getElementById('input_recipient').value;
-            document.getElementById('view_recipient').textContent = recipientVal;
+            document.getElementById('view_reporter_sign').textContent = document.getElementById('input_reporter').value;
+            document.getElementById('view_position_sign').textContent = document.getElementById('input_position').value;
+            document.getElementById('view_recipient').textContent = document.getElementById('input_recipient').value;
         }
 
-        // ฟังก์ชันสั่งพิมพ์ PDF โดยใช้ Browser Print Engine (ได้ฟอนต์ THSarabunNew คมชัด 100%)
         function printPDF() {
-            // ตรวจสอบว่ากรอกข้อมูลสำคัญหรือยัง
-            const reporter = document.getElementById('input_reporter').value;
-            if (!reporter) {
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'กรุณากรอกข้อมูล',
-                    text: 'กรุณากรอกชื่อผู้รายงานอย่างน้อย 1 รายการก่อนสั่งพิมพ์',
-                    confirmButtonColor: '#3085d6'
-                });
+            if (!document.getElementById('input_reporter').value) {
+                Swal.fire({ icon: 'warning', title: 'กรุณากรอกข้อมูล', text: 'กรุณากรอกชื่อผู้รายงานอย่างน้อย 1 รายการก่อนสั่งพิมพ์' });
                 return;
             }
-
-            // เรียกหน้าต่างพิมพ์ของระบบ (ผู้ใช้เลือก Save as PDF ได้ทันที)
             window.print();
         }
 
-        // บันทึกข้อมูลแบบร่างลง LocalStorage
         function saveDraft() {
             const formData = {};
-            const inputs = document.querySelectorAll('input, textarea, select');
-            inputs.forEach(input => {
-                if (input.id) {
-                    formData[input.id] = input.value;
-                }
+            document.querySelectorAll('input, textarea, select').forEach(input => {
+                if (input.id) formData[input.id] = input.value;
             });
-
             localStorage.setItem('korat_car_report_draft', JSON.stringify(formData));
-            Swal.fire({
-                icon: 'success',
-                title: 'บันทึกแบบร่างสำเร็จ',
-                text: 'ข้อมูลถูกบันทึกไว้ในเบราว์เซอร์เรียบร้อยแล้ว',
-                timer: 1500,
-                showConfirmButton: false
-            });
+            Swal.fire({ icon: 'success', title: 'บันทึกแบบร่างสำเร็จ', timer: 1500, showConfirmButton: false });
         }
 
-        // โหลดข้อมูลแบบร่างจาก LocalStorage
         function loadDraft() {
             const savedData = localStorage.getItem('korat_car_report_draft');
             if (!savedData) {
-                Swal.fire({
-                    icon: 'info',
-                    title: 'ไม่พบแบบร่าง',
-                    text: 'ยังไม่มีข้อมูลแบบร่างที่บันทึกไว้ก่อนหน้านี้'
-                });
+                Swal.fire({ icon: 'info', title: 'ไม่พบแบบร่าง' });
                 return;
             }
-
             const formData = JSON.parse(savedData);
             Object.keys(formData).forEach(id => {
                 const elem = document.getElementById(id);
-                if (elem) {
-                    elem.value = formData[id];
-                }
+                if (elem) elem.value = formData[id];
             });
-
             updatePreview();
-            Swal.fire({
-                icon: 'success',
-                title: 'โหลดข้อมูลสำเร็จ',
-                text: 'ดึงข้อมูลแบบร่างเดิมเรียบร้อยแล้ว',
-                timer: 1500,
-                showConfirmButton: false
-            });
+            Swal.fire({ icon: 'success', title: 'โหลดข้อมูลสำเร็จ', timer: 1500, showConfirmButton: false });
         }
 
-        // ตั้งค่าเริ่มต้นเมื่อเปิดหน้าเว็บ
         window.addEventListener('DOMContentLoaded', () => {
-            // ตั้งค่าวันที่ปัจจุบันในไทย
             const today = new Date();
             const thaiMonths = ['มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน', 'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'];
-            const thaiDateStr = `${today.getDate()} ${thaiMonths[today.getMonth()]} ${today.getFullYear() + 543}`;
-            
-            document.getElementById('input_date').value = thaiDateStr;
+            document.getElementById('input_date').value = `${today.getDate()} ${thaiMonths[today.getMonth()]} ${today.getFullYear() + 543}`;
             updatePreview();
         });
     </script>
