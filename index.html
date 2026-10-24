@@ -106,7 +106,7 @@
 </head>
 <body class="bg-gray-100 min-h-screen">
 
-    <!-- Header หน้าเว็บ -->
+    <!-- Header หน้าเว็บ (ปรับเอาปุ่มดึงร่างเดิมออกแล้ว) -->
     <header class="no-print bg-blue-900 text-white shadow-lg sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap justify-between items-center">
             <div class="flex items-center space-x-3">
@@ -323,20 +323,19 @@
                         <div class="pt-0.5">อุปสรรคและปัญหา <span id="view_obstacle" class="dotted-line w-full min-h-[2.2em] whitespace-pre-wrap"></span></div>
                     </div>
 
-                    <!-- ลงชื่อพนักงานขับรถ -->
+                    <!-- ลงชื่อพนักงานขับรถ (ปรับตำแหน่งลายเซ็นให้อยู่ทับบนจุดไข่ปลาโดยตรง) -->
                     <div class="mt-3 flex justify-end">
-                        <div class="text-center w-72">
-                            <div>ลงชื่อ ....................................................... พนักงานขับรถ</div>
-                            <!-- แสดงภาพลายเซ็นอยู่ด้านล่างคำว่า ลงชื่อ และเหนือวงเล็บชื่อ -->
-                            <div class="h-10 my-[-6px] flex items-center justify-center">
-                                <img id="img_sign_driver" class="max-h-11 object-contain hidden" alt="ลายเซ็นพนักงานขับรถ">
+                        <div class="text-center w-72 space-y-0.5">
+                            <div class="relative inline-block w-full">
+                                ลงชื่อ ....................................................... พนักงานขับรถ
+                                <img id="img_sign_driver" class="absolute left-12 -top-5 h-12 object-contain hidden pointer-events-none" alt="ลายเซ็นพนักงานขับรถ">
                             </div>
                             <div>( <span id="view_reporter_sign" class="dotted-line min-w-[170px]"></span> )</div>
                             <div>ตำแหน่ง <span id="view_position_sign" class="dotted-line min-w-[170px]"></span></div>
                         </div>
                     </div>
 
-                    <!-- ส่วนเสนอรายงาน -->
+                    <!-- ส่วนเสนอรายงาน (ปรับตำแหน่งลายเซ็นให้อยู่ทับบนจุดไข่ปลาโดยตรง) -->
                     <div class="mt-2 pt-1">
                         <div class="font-bold">
                             เรียน <span id="view_recipient">หัวหน้างานศูนย์ป้องกันและบรรเทาสาธารณภัย</span>
@@ -346,11 +345,10 @@
                         </div>
 
                         <div class="mt-2 flex justify-end">
-                            <div class="text-center w-72">
-                                <div>ลงชื่อ ....................................................... หัวหน้าชุดเวรเตรียมพร้อม</div>
-                                <!-- แสดงภาพลายเซ็นอยู่ด้านล่างคำว่า ลงชื่อ และเหนือวงเล็บชื่อ -->
-                                <div class="h-10 my-[-6px] flex items-center justify-center">
-                                    <img id="img_sign_head" class="max-h-11 object-contain hidden" alt="ลายเซ็นหัวหน้าชุดเวร">
+                            <div class="text-center w-72 space-y-0.5">
+                                <div class="relative inline-block w-full">
+                                    ลงชื่อ ....................................................... หัวหน้าชุดเวรเตรียมพร้อม
+                                    <img id="img_sign_head" class="absolute left-12 -top-5 h-12 object-contain hidden pointer-events-none" alt="ลายเซ็นหัวหน้าชุดเวร">
                                 </div>
                                 <div>( <span id="view_head_name" class="dotted-line min-w-[170px]"></span> )</div>
                                 <div>ตำแหน่ง <span id="view_head_pos" class="dotted-line min-w-[170px]"></span></div>
@@ -505,7 +503,7 @@
                 if (input.id) formData[input.id] = input.value;
             });
 
-            // บันทึกลายเซ็นลงในร่าง
+            // เพิ่มข้อมูลลายเซ็นลงในร่าง
             formData['sig_driver_data'] = sigDriver.getData();
             formData['sig_head_data'] = sigHead.getData();
 
@@ -513,10 +511,9 @@
             Swal.fire({ icon: 'success', title: 'บันทึกแบบร่างสำเร็จ', timer: 1500, showConfirmButton: false });
         }
 
-        function loadDraftAuto() {
+        function loadDraft() {
             const savedData = localStorage.getItem('korat_car_report_draft');
             if (!savedData) return;
-            
             const formData = JSON.parse(savedData);
             Object.keys(formData).forEach(id => {
                 const elem = document.getElementById(id);
@@ -539,8 +536,8 @@
             const thaiMonths = ['มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน', 'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'];
             document.getElementById('input_date').value = `${today.getDate()} ${thaiMonths[today.getMonth()]} ${today.getFullYear() + 543}`;
             
-            // โหลดแบบร่างเดิมอัตโนมัติถ้ามีบันทึกไว้
-            loadDraftAuto();
+            // โหลดข้อมูลแบบร่างเดิมโดยอัตโนมัติหากมีบันทึกไว้
+            loadDraft();
             updatePreview();
         });
     </script>
