@@ -447,9 +447,6 @@
                     <button onclick="loadMockData()" class="px-3.5 py-2 bg-slate-200 text-slate-700 rounded-lg text-xs font-medium hover:bg-slate-300 transition flex items-center gap-1.5">
                         <i class="fa-solid fa-database"></i> โหลดข้อมูลตัวอย่าง
                     </button>
-                    <button onclick="previewCombinedDocument()" class="px-4 py-2 bg-emerald-600 text-white rounded-lg text-xs font-medium hover:bg-emerald-700 shadow-md transition flex items-center gap-1.5">
-                        <i class="fa-solid fa-print"></i> พิมพ์ / ดาวน์โหลด PDF รวมแบบฟอร์ม
-                    </button>
                 </div>
             </div>
 
@@ -477,31 +474,6 @@
                     </div>
                     <div id="driver-reports-list" class="space-y-3 max-h-96 overflow-y-auto pr-1">
                         <!-- Rendered via JS -->
-                    </div>
-                </div>
-            </div>
-
-            <!-- PDF Document Live Preview Area -->
-            <div class="mt-8 bg-slate-200 p-4 sm:p-8 rounded-2xl border border-slate-300 shadow-inner">
-                <div class="flex justify-between items-center mb-4 bg-white p-4 rounded-xl shadow-sm no-print">
-                    <div>
-                        <h3 class="font-bold text-slate-800">ตัวอย่างเอกสารชุดรายงานสมบูรณ์ (Official Document Layout)</h3>
-                        <p class="text-xs text-slate-500">จัดเรียง: 1. รายงานการออกปฏิบัติงาน (หัวหน้าชุด) ➔ 2. รายงานการใช้รถยนต์ออกปฏิบัติงาน (พนักงานขับรถ)</p>
-                    </div>
-                    <div class="flex gap-2">
-                        <button onclick="downloadPDF()" class="px-4 py-2 bg-korat-orange text-white rounded-lg text-xs font-semibold hover:bg-orange-600 shadow transition flex items-center gap-1.5">
-                            <i class="fa-solid fa-file-pdf"></i> บันทึกเป็น PDF
-                        </button>
-                        <button onclick="window.print()" class="px-4 py-2 bg-slate-800 text-white rounded-lg text-xs font-semibold hover:bg-slate-900 shadow transition flex items-center gap-1.5">
-                            <i class="fa-solid fa-print"></i> สั่งพิมพ์เอกสาร
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Print Container Wrapper -->
-                <div class="pdf-export-wrapper">
-                    <div id="pdf-container">
-                        <!-- Dynamic official page rendering -->
                     </div>
                 </div>
             </div>
@@ -561,9 +533,8 @@
             document.getElementById('driver_date').value = today;
             document.getElementById('doc_date').value = today;
 
-            // Render history & initial document preview
+            // Render history lists
             renderHistoryLists();
-            previewCombinedDocument();
         });
 
         // Initialize Signature Pads
@@ -629,10 +600,6 @@
                     btn.className = "px-3.5 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2 bg-transparent hover:bg-white/10 text-slate-200";
                 }
             });
-
-            if(tabId === 'tab-history') {
-                previewCombinedDocument();
-            }
         }
 
         // Save Driver Report
@@ -825,7 +792,6 @@
         function selectLeaderForPreview(id) {
             selectedLeaderReportId = id;
             renderHistoryLists();
-            previewCombinedDocument();
         }
 
         function deleteReport(type, id) {
@@ -838,249 +804,8 @@
                 }
                 persistData();
                 renderHistoryLists();
-                previewCombinedDocument();
                 showToast('ลบรายการเรียบร้อยแล้ว');
             }
-        }
-
-        // Render Combined Official Document Layout
-        function previewCombinedDocument() {
-            const container = document.getElementById('pdf-container');
-            
-            const leaderRep = leaderReports.find(r => r.id === selectedLeaderReportId) || leaderReports[0] || getMockLeaderReport();
-            const dReports = driverReports.length > 0 ? driverReports : [getMockDriverReport()];
-            const stationNameOnly = leaderRep.department ? leaderRep.department.split(' ')[0] : 'สถานีดับเพลิง';
-
-            // HTML Page 1: บันทึกข้อความ (หัวหน้าชุดเวรเตรียมพร้อม)
-            let page1HTML = `
-                <div class="gov-page" id="pdf-page-1">
-                    <!-- Garuda Header Row -->
-                    <div style="position: relative; height: 90px; margin-bottom: 10px;">
-                        <div style="position: absolute; left: 0; top: 0;">
-                            ${GARUDA_SVG}
-                        </div>
-                        <div class="gov-title" style="position: absolute; width: 100%; text-align: center; top: 25px;">
-                            บันทึกข้อความ
-                        </div>
-                    </div>
-
-                    <!-- Header Details Table -->
-                    <table class="gov-header-table">
-                        <tr>
-                            <td style="width: 80px; font-weight: bold;">ส่วนราชการ</td>
-                            <td><span class="dot-line" style="width: 98%; font-weight: bold;">${leaderRep.department}</span></td>
-                        </tr>
-                    </table>
-                    <table class="gov-header-table">
-                        <tr>
-                            <td style="width: 30px; font-weight: bold;">ที่</td>
-                            <td style="width: 45%;"><span class="dot-line" style="width: 95%;">${leaderRep.docNumber}</span></td>
-                            <td style="width: 45px; font-weight: bold; text-align: right;">วันที่&nbsp;</td>
-                            <td><span class="dot-line" style="width: 95%; text-align: center;">${formatDateThaiFull(leaderRep.docDate)}</span></td>
-                        </tr>
-                    </table>
-                    <table class="gov-header-table" style="margin-bottom: 15px;">
-                        <tr>
-                            <td style="width: 45px; font-weight: bold;">เรื่อง</td>
-                            <td><span class="dot-line" style="width: 98%;">รายงานการออกปฏิบัติงาน</span></td>
-                        </tr>
-                    </table>
-
-                    <!-- Addressing -->
-                    <div style="margin-bottom: 10px;">
-                        <div><strong>เรียน</strong> นายกเทศมนตรีนครนครราชสีมา</div>
-                        <div style="padding-left: 50px; font-size: 14pt;">ผ่าน ปลัดเทศบาล หัวหน้าสำนักปลัดเทศบาล หัวหน้าฝ่ายปกครอง และ หัวหน้างาน</div>
-                    </div>
-
-                    <!-- Paragraph Content -->
-                    <div style="text-align: justify; text-justify: inter-cluster; line-height: 1.5;">
-                        <p style="text-indent: 50px; margin: 0 0 8px 0;">
-                            หัวหน้าชุดเวรเตรียมพร้อมชุดที่ <span style="font-weight: bold;">${leaderRep.shiftTeamNo}</span> ${stationNameOnly} 
-                            ด้วยข้าพเจ้า <span style="font-weight: bold;">${leaderRep.leaderNameSigned}</span> 
-                            ฝ่ายปกครอง สำนักปลัดเทศบาล ขอรายงานผลการปฏิบัติงานของชุดเวรเตรียมพร้อม ดังนี้
-                        </p>
-
-                        <!-- Items 1 - 7 -->
-                        <div style="padding-left: 20px; font-size: 14.5pt;">
-            `;
-
-            for(let i = 1; i <= 7; i++) {
-                const item = (leaderRep.opItems && leaderRep.opItems[i-1]) ? leaderRep.opItems[i-1] : null;
-                if(item && (item.date || item.action)) {
-                    page1HTML += `
-                        <div style="margin-bottom: 3px;">
-                            <strong>${toThaiDigit(i)}.</strong> วันที่ <span class="dot-line" style="min-width: 110px; text-align:center;">${item.date || ''}</span> 
-                            เวลา <span class="dot-line" style="min-width: 100px; text-align:center;">${item.time || ''}</span> 
-                            ออกปฏิบัติงาน <span class="dot-line" style="min-width: 180px;">${item.action || ''}</span> 
-                            รถ <span class="dot-line" style="min-width: 120px;">${item.car || ''}</span>
-                        </div>
-                    `;
-                } else {
-                    page1HTML += `
-                        <div style="margin-bottom: 3px; color: #444;">
-                            <strong>${toThaiDigit(i)}.</strong> วันที่ <span class="dot-line" style="min-width: 110px;"></span> 
-                            เวลา <span class="dot-line" style="min-width: 100px;"></span> 
-                            ออกปฏิบัติงาน <span class="dot-line" style="min-width: 180px;"></span> 
-                            รถ <span class="dot-line" style="min-width: 120px;"></span>
-                        </div>
-                    `;
-                }
-            }
-
-            page1HTML += `
-                        </div>
-
-                        <!-- Results & Status -->
-                        <div style="margin-top: 10px; line-height: 1.5;">
-                            <div>
-                                <strong>ผลการออกปฏิบัติงาน:</strong>
-                                <span class="dot-line" style="width: 78%;">${leaderRep.overallResult}</span>
-                            </div>
-                            <div>
-                                <strong>อุปกรณ์ที่นำไปปฏิบัติงานใช้การได้ดีหรือไม่:</strong>
-                                <span class="dot-line" style="width: 58%;">${leaderRep.equipmentStatus}</span>
-                            </div>
-                            <div>
-                                <strong>ขณะปฏิบัติงานมีปัญหาหรืออุปสรรคหรือไม่:</strong>
-                                <span class="dot-line" style="width: 58%;">${leaderRep.problems}</span>
-                            </div>
-                        </div>
-
-                        <p style="text-indent: 50px; margin: 15px 0 0 0;">จึงเรียนมาเพื่อโปรดทราบ</p>
-                    </div>
-
-                    <!-- Leader Signature Box -->
-                    <div style="margin-top: 30px; float: right; width: 280px; text-align: center; line-height: 1.3;">
-                        <div>ลงชื่อ..........................................................ผู้รายงาน</div>
-                        <div style="height: 45px; display: flex; align-items: center; justify-content: center;">
-                            ${leaderRep.signatureImg ? `<img src="${leaderRep.signatureImg}" style="max-height: 42px;">` : ''}
-                        </div>
-                        <div style="font-weight: bold;">(${leaderRep.leaderNameSigned})</div>
-                        <div style="font-size: 14pt; color: #222;">${leaderRep.leaderPositionTitle}</div>
-                    </div>
-                </div>
-            `;
-
-            // HTML Page 2+: รายงานการใช้รถยนต์ออกปฏิบัติงาน
-            let pagesDriverHTML = dReports.map((dRep, index) => `
-                <div class="gov-page" id="pdf-page-driver-${index}">
-                    <div style="text-align: center; font-weight: bold; font-size: 18pt; margin-bottom: 15px; border-bottom: 2px solid #000; padding-bottom: 8px;">
-                        รายงานการใช้รถยนต์ออกปฏิบัติงาน<br>
-                        <span style="font-size: 15pt; font-weight: normal;">ฝ่ายปกครอง สำนักปลัดเทศบาล เทศบาลนครนครราชสีมา</span>
-                    </div>
-
-                    <div style="line-height: 1.6; font-size: 15pt;">
-                        <table style="width: 100%; border-collapse: collapse;">
-                            <tr>
-                                <td style="width: 55%;">ข้าพเจ้า <span class="dot-line" style="width: 80%; font-weight:bold;">${dRep.driverName}</span></td>
-                                <td style="width: 45%;">ตำแหน่ง <span class="dot-line" style="width: 75%; font-weight:bold;">${dRep.driverPosition}</span></td>
-                            </tr>
-                            <tr>
-                                <td>ทำหน้าที่ขับรถยนต์ <span class="dot-line" style="width: 65%; font-weight:bold;">${dRep.vehicleType}</span></td>
-                                <td>หมายเลขทะเบียน <span class="dot-line" style="width: 60%; font-weight:bold;">${dRep.vehiclePlate}</span></td>
-                            </tr>
-                        </table>
-
-                        <div style="margin-top: 5px;">
-                            ในวันที่ <span class="dot-line" style="min-width: 180px; text-align:center; font-weight:bold;">${formatDateThaiFull(dRep.date)}</span>
-                            ออกปฏิบัติงานตั้งแต่เวลา <span class="dot-line" style="min-width: 70px; text-align:center; font-weight:bold;">${dRep.startTime}</span> น. 
-                            ถึงเวลา <span class="dot-line" style="min-width: 70px; text-align:center; font-weight:bold;">${dRep.endTime}</span> น.
-                        </div>
-
-                        <!-- Attending personnel -->
-                        <div style="margin-top: 10px;">
-                            <div style="font-weight: bold;">มีผู้ร่วมปฏิบัติงาน ดังนี้</div>
-                            <table style="width: 100%; font-size: 14.5pt; margin-left: 15px;">
-                                <tr>
-                                    <td style="width: 50%;">๑. ${dRep.attendingStaff[0] || '.........................................................'}</td>
-                                    <td style="width: 50%;">๒. ${dRep.attendingStaff[1] || '.........................................................'}</td>
-                                </tr>
-                                <tr>
-                                    <td>๓. ${dRep.attendingStaff[2] || '.........................................................'}</td>
-                                    <td>๔. ${dRep.attendingStaff[3] || '.........................................................'}</td>
-                                </tr>
-                                <tr>
-                                    <td>๕. ${dRep.attendingStaff[4] || '.........................................................'}</td>
-                                    <td>๖. ${dRep.attendingStaff[5] || '.........................................................'}</td>
-                                </tr>
-                            </table>
-                        </div>
-
-                        <!-- Absent staff -->
-                        <div style="margin-top: 10px;">
-                            <div style="font-weight: bold;">พนักงานประจำรถไม่ออกร่วมปฏิบัติงาน มีดังนี้</div>
-                            <div style="padding-left: 15px; font-size: 14.5pt;">
-                                <div>
-                                    ๑. ${dRep.absentStaff && dRep.absentStaff[0] ? dRep.absentStaff[0].name : '.........................................................'} 
-                                    สาเหตุเนื่องจาก <span class="dot-line" style="min-width: 200px;">${dRep.absentStaff && dRep.absentStaff[0] ? dRep.absentStaff[0].reason : ''}</span>
-                                </div>
-                                <div>
-                                    ๒. ${dRep.absentStaff && dRep.absentStaff[1] ? dRep.absentStaff[1].name : '.........................................................'} 
-                                    สาเหตุเนื่องจาก <span class="dot-line" style="min-width: 200px;">${dRep.absentStaff && dRep.absentStaff[1] ? dRep.absentStaff[1].reason : ''}</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Work Result & Obstacles -->
-                        <div style="margin-top: 10px;">
-                            <div>
-                                <strong>ผลการปฏิบัติงาน:</strong>
-                                <span class="dot-line" style="width: 80%;">${dRep.workResult}</span>
-                            </div>
-                            <div>
-                                <strong>อุปสรรคและปัญหา:</strong>
-                                <span class="dot-line" style="width: 79%;">${dRep.problems}</span>
-                            </div>
-                        </div>
-
-                        <div style="margin-top: 15px;">
-                            <div>เรียน หัวหน้า<span class="dot-line" style="min-width: 200px; font-weight:bold;">${dRep.targetStation || stationNameOnly}</span></div>
-                            <div style="padding-left: 40px; font-size: 14pt;">เพื่อโปรดทราบ</div>
-                        </div>
-                    </div>
-
-                    <!-- Signatures footer -->
-                    <table style="width: 100%; margin-top: 45px; text-align: center; font-size: 14.5pt;">
-                        <tr>
-                            <td style="width: 50%; vertical-align: bottom;">
-                                <div>ลงชื่อ..........................................................</div>
-                                <div style="font-size: 13pt; color: #444; margin-top: 4px;">ตำแหน่ง หัวหน้าชุดเวรเตรียมพร้อม</div>
-                                <div style="font-weight: bold; margin-top: 15px;">(${leaderRep.leaderNameSigned || '...................................................'})</div>
-                            </td>
-                            <td style="width: 50%; vertical-align: bottom;">
-                                <div>ลงชื่อ..........................................................</div>
-                                <div style="height: 38px; display: flex; align-items: center; justify-content: center;">
-                                    ${dRep.signatureImg ? `<img src="${dRep.signatureImg}" style="max-height: 36px;">` : ''}
-                                </div>
-                                <div style="font-weight: bold;">(${dRep.driverNameSigned || dRep.driverName})</div>
-                                <div style="font-size: 13pt; color: #444;">ตำแหน่ง ${dRep.driverPosition}</div>
-                            </td>
-                        </tr>
-                    </table>
-                </div>
-            `).join('');
-
-            container.innerHTML = page1HTML + pagesDriverHTML;
-        }
-
-        // Generate PDF using html2pdf.js with precise page sizing
-        function downloadPDF() {
-            showToast('กำลังประมวลผลไฟล์ PDF...');
-            const element = document.getElementById('pdf-container');
-            const opt = {
-                margin:       0,
-                filename:     `E-Operation_Report_${new Date().toISOString().split('T')[0]}.pdf`,
-                image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2, useCORS: true, logging: false },
-                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
-            };
-
-            html2pdf().set(opt).from(element).save().then(() => {
-                showToast('ดาวน์โหลดไฟล์ PDF เรียบร้อยแล้ว');
-            }).catch(err => {
-                console.error("PDF generation error: ", err);
-                showToast('เกิดข้อผิดพลาดในการบันทึก PDF');
-            });
         }
 
         // Helper Functions & Mock Data
@@ -1132,7 +857,6 @@
             selectedLeaderReportId = leaderReports[0].id;
             persistData();
             renderHistoryLists();
-            previewCombinedDocument();
             showToast('โหลดข้อมูลตัวอย่างเรียบร้อยแล้ว');
         }
 
