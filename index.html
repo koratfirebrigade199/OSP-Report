@@ -170,7 +170,7 @@
         <!-- TAB 1: Driver Vehicle Operation Form -->
         <section id="tab-driver" class="tab-content block">
             <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden mb-6">
-                <div class="bg-gradient-to-r from-orange-500 to-amber-600 px-6 py-4 text-white flex justify-between items-center">
+                <div class="bg-gradient-to-r from-orange-500 to-amber-600 px-6 py-4 text-white flex justify-between items-center flex-wrap gap-2">
                     <div class="flex items-center space-x-3">
                         <i class="fa-solid fa-car-side text-2xl"></i>
                         <div>
@@ -178,7 +178,12 @@
                             <p class="text-xs text-orange-100">สำหรับเจ้าหน้าที่พนักงานขับรถกรอกข้อมูลการนำรถออกปฏิบัติการ</p>
                         </div>
                     </div>
-                    <span class="bg-white/20 px-3 py-1 rounded-full text-xs font-semibold">พนักงานขับรถ</span>
+                    <div class="flex items-center gap-2">
+                        <button type="button" onclick="clearDriverForm()" class="bg-white/20 hover:bg-rose-600/80 text-white px-3 py-1.5 rounded-lg text-xs font-semibold transition flex items-center gap-1.5 backdrop-blur-sm shadow-sm border border-white/20">
+                            <i class="fa-solid fa-eraser"></i> ล้างข้อมูลทั้งหมด
+                        </button>
+                        <span class="bg-white/20 px-3 py-1.5 rounded-full text-xs font-semibold">พนักงานขับรถ</span>
+                    </div>
                 </div>
 
                 <form id="driverForm" onsubmit="saveDriverReport(event)" class="p-6 space-y-6">
@@ -366,9 +371,14 @@
                             <h3 class="text-sm font-semibold text-korat-blue flex items-center gap-2">
                                 <i class="fa-solid fa-list-check"></i> ส่วนที่ 2: ดึงรายการปฏิบัติงานจากการบันทึกใช้รถยนต์ (สูงสุด 7 รายการ)
                             </h3>
-                            <button type="button" onclick="openVehicleSelectorModal()" class="text-xs bg-korat-blue text-white px-3 py-1.5 rounded-lg hover:bg-blue-800 transition flex items-center gap-1">
-                                <i class="fa-solid fa-plus-circle"></i> เลือกจากรายงานรถยนต์ในระบบ
-                            </button>
+                            <div class="flex items-center gap-2 flex-wrap">
+                                <button type="button" onclick="clearAllOpItems()" class="text-xs bg-rose-100 text-rose-700 hover:bg-rose-200 px-2.5 py-1.5 rounded-lg transition flex items-center gap-1 font-medium">
+                                    <i class="fa-solid fa-eraser"></i> ล้างข้อมูลทั้งหมด
+                                </button>
+                                <button type="button" onclick="openVehicleSelectorModal()" class="text-xs bg-korat-blue text-white px-3 py-1.5 rounded-lg hover:bg-blue-800 transition flex items-center gap-1 shadow-sm font-medium">
+                                    <i class="fa-solid fa-plus-circle"></i> เลือกจากรายงานรถยนต์ในระบบ
+                                </button>
+                            </div>
                         </div>
 
                         <!-- 7 Operation entries -->
@@ -506,85 +516,153 @@
         </div>
     </footer>
 
-    <!-- Application Core Script -->
+    <!-- Main Logic Script -->
     <script>
-        // State Management
+        // Global State & Signature Pads
+        let driverSigPad = null;
+        let leaderSigPad = null;
         let driverReports = [];
         let leaderReports = [];
         let selectedLeaderReportId = null;
 
-        // Signature Pads
-        let driverSigPad = null;
-        let leaderSigPad = null;
-
-        // Vector Garuda SVG (Official Thai Garuda Emblem for Document Rendering)
-        const GARUDA_SVG = `<svg viewBox="0 0 100 108" width="80" height="85" style="display:block;">
-            <path fill="#000000" d="M49.9,2.5 C49.9,2.5 45.4,12.8 35.8,17.4 C26.2,22.0 14.8,17.8 14.8,17.8 C14.8,17.8 19.9,26.7 27.6,28.8 C35.3,30.9 41.5,27.3 41.5,27.3 C41.5,27.3 35.1,34.8 24.3,38.2 C13.5,41.6 3.1,36.9 3.1,36.9 C3.1,36.9 8.9,46.8 18.9,49.9 C28.9,53.0 38.6,47.8 38.6,47.8 C38.6,47.8 29.8,55.9 17.1,62.8 C4.4,69.7 0,78.5 0,78.5 C0,78.5 12.1,75.4 23.3,69.4 C34.5,63.4 43.1,54.8 43.1,54.8 C43.1,54.8 40.1,68.9 42.6,83.8 C45.1,98.7 49.9,105.5 49.9,105.5 C49.9,105.5 54.7,98.7 57.2,83.8 C59.7,68.9 56.7,54.8 56.7,54.8 C56.7,54.8 65.3,63.4 76.5,69.4 C87.7,75.4 99.8,78.5 99.8,78.5 C99.8,78.5 95.4,69.7 82.7,62.8 C70.0,55.9 61.2,47.8 61.2,47.8 C61.2,47.8 70.9,53.0 80.9,49.9 C90.9,46.8 96.7,36.9 96.7,36.9 C96.7,36.9 86.3,41.6 75.5,38.2 C64.7,34.8 58.3,27.3 58.3,27.3 C58.3,27.3 64.5,30.9 72.2,28.8 C79.9,26.7 85.0,17.8 85.0,17.8 C85.0,17.8 73.6,22.0 64.0,17.4 C54.4,12.8 49.9,2.5 49.9,2.5 Z"/>
-        </svg>`;
-
-        // Initialize on DOM Ready
-        window.addEventListener('DOMContentLoaded', () => {
+        // Initialize Application on DOM Ready
+        document.addEventListener('DOMContentLoaded', function() {
             initSignaturePads();
             initLeaderFormItems();
             loadStoredData();
             
-            // Set default date inputs to today
+            // Set current date for forms
             const today = new Date().toISOString().split('T')[0];
-            document.getElementById('driver_date').value = today;
-            document.getElementById('doc_date').value = today;
-
-            // Render history lists
-            renderHistoryLists();
+            const driverDateInput = document.getElementById('driver_date');
+            const docDateInput = document.getElementById('doc_date');
+            if(driverDateInput) driverDateInput.value = today;
+            if(docDateInput) docDateInput.value = today;
         });
 
-        // Initialize Signature Pads
         function initSignaturePads() {
-            const canvas1 = document.getElementById('driver-sig-canvas');
-            const canvas2 = document.getElementById('leader-sig-canvas');
+            const driverCanvas = document.getElementById('driver-sig-canvas');
+            const leaderCanvas = document.getElementById('leader-sig-canvas');
 
-            if(canvas1) {
-                driverSigPad = new SignaturePad(canvas1, { backgroundColor: 'rgb(250, 250, 250)' });
+            if (driverCanvas) {
+                driverSigPad = new SignaturePad(driverCanvas, { backgroundColor: 'rgb(255, 255, 255)' });
             }
-            if(canvas2) {
-                leaderSigPad = new SignaturePad(canvas2, { backgroundColor: 'rgb(250, 250, 250)' });
+            if (leaderCanvas) {
+                leaderSigPad = new SignaturePad(leaderCanvas, { backgroundColor: 'rgb(255, 255, 255)' });
             }
         }
 
         function clearSignature(type) {
-            if(type === 'driver' && driverSigPad) driverSigPad.clear();
-            if(type === 'leader' && leaderSigPad) leaderSigPad.clear();
+            if (type === 'driver' && driverSigPad) driverSigPad.clear();
+            if (type === 'leader' && leaderSigPad) leaderSigPad.clear();
         }
 
-        // Generate 7 rows for Leader Report items
+        // Clear Driver Form completely for new entry
+        function clearDriverForm() {
+            if(confirm('คุณต้องการล้างข้อมูลในแบบฟอร์มการใช้รถยนต์ทั้งหมดใช่หรือไม่?')) {
+                const form = document.getElementById('driverForm');
+                if(form) form.reset();
+                
+                // Clear signature canvas
+                if (driverSigPad) driverSigPad.clear();
+
+                // Reset default values
+                const today = new Date().toISOString().split('T')[0];
+                const driverDateInput = document.getElementById('driver_date');
+                const driverPosInput = document.getElementById('driver_position');
+                const driverProblemsInput = document.getElementById('driver_problems');
+
+                if(driverDateInput) driverDateInput.value = today;
+                if(driverPosInput) driverPosInput.value = "พนักงานขับรถยนต์";
+                if(driverProblemsInput) driverProblemsInput.value = "-";
+
+                showToast('ล้างข้อมูลแบบฟอร์มการใช้รถยนต์เรียบร้อยแล้ว');
+            }
+        }
+
+        // Generate 7 rows for Leader Report items with Edit and Delete capabilities
         function initLeaderFormItems() {
             const container = document.getElementById('leader-op-items');
+            if(!container) return;
             container.innerHTML = '';
             for(let i=1; i<=7; i++) {
                 const row = document.createElement('div');
-                row.className = "bg-white p-3 rounded-lg border border-blue-100 text-xs grid grid-cols-1 md:grid-cols-12 gap-2 items-center";
+                row.className = "bg-white p-3 rounded-xl border border-blue-100 text-xs shadow-sm hover:border-blue-300 transition space-y-2 md:space-y-0";
                 row.innerHTML = `
-                    <div class="font-bold text-slate-700 md:col-span-1 flex items-center">ข้อ ${i}.</div>
-                    <div class="md:col-span-3">
-                        <input type="text" id="op_date_${i}" placeholder="วันที่/เดือน/พ.ศ." class="w-full px-2.5 py-1.5 border border-slate-300 rounded focus:ring-1 focus:ring-blue-500">
-                    </div>
-                    <div class="md:col-span-2">
-                        <input type="text" id="op_time_${i}" placeholder="เวลา...น.-...น." class="w-full px-2.5 py-1.5 border border-slate-300 rounded focus:ring-1 focus:ring-blue-500">
-                    </div>
-                    <div class="md:col-span-3">
-                        <input type="text" id="op_action_${i}" placeholder="ออกปฏิบัติงาน..." class="w-full px-2.5 py-1.5 border border-slate-300 rounded focus:ring-1 focus:ring-blue-500">
-                    </div>
-                    <div class="md:col-span-3">
-                        <input type="text" id="op_car_${i}" placeholder="รถทะเบียน..." class="w-full px-2.5 py-1.5 border border-slate-300 rounded focus:ring-1 focus:ring-blue-500">
+                    <div class="grid grid-cols-1 md:grid-cols-12 gap-2 items-center">
+                        <div class="font-bold text-slate-700 md:col-span-1 flex items-center justify-between md:justify-start gap-1">
+                            <span>ข้อ ${i}.</span>
+                            <div class="flex md:hidden gap-1">
+                                <button type="button" onclick="focusOpRow(${i})" class="px-2 py-1 text-slate-500 hover:text-korat-blue bg-slate-100 rounded" title="แก้ไข">
+                                    <i class="fa-solid fa-pen-to-square"></i>
+                                </button>
+                                <button type="button" onclick="clearOpRow(${i})" class="px-2 py-1 text-rose-500 hover:text-rose-700 bg-rose-50 rounded" title="ลบรายการนี้">
+                                    <i class="fa-solid fa-trash-can"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="md:col-span-2">
+                            <input type="text" id="op_date_${i}" placeholder="วันที่/เดือน/พ.ศ." class="w-full px-2.5 py-1.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                        </div>
+                        <div class="md:col-span-2">
+                            <input type="text" id="op_time_${i}" placeholder="เวลา...น.-...น." class="w-full px-2.5 py-1.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                        </div>
+                        <div class="md:col-span-3">
+                            <input type="text" id="op_action_${i}" placeholder="ออกปฏิบัติงาน..." class="w-full px-2.5 py-1.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                        </div>
+                        <div class="md:col-span-3">
+                            <input type="text" id="op_car_${i}" placeholder="รถทะเบียน..." class="w-full px-2.5 py-1.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                        </div>
+                        <div class="hidden md:flex md:col-span-1 justify-center items-center gap-1">
+                            <button type="button" onclick="focusOpRow(${i})" class="p-1.5 text-slate-400 hover:text-korat-blue hover:bg-blue-50 rounded-lg transition" title="แก้ไขข้อมูล">
+                                <i class="fa-solid fa-pen-to-square"></i>
+                            </button>
+                            <button type="button" onclick="clearOpRow(${i})" class="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition" title="ลบ/ล้างแถวนี้">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                        </div>
                     </div>
                 `;
                 container.appendChild(row);
             }
         }
 
+        // Focus & highlight row for editing
+        function focusOpRow(index) {
+            const input = document.getElementById(`op_action_${index}`);
+            if (input) {
+                input.focus();
+                showToast(`แก้ไขข้อ ${index}`);
+            }
+        }
+
+        // Clear single operation row
+        function clearOpRow(index) {
+            const d = document.getElementById(`op_date_${index}`);
+            const t = document.getElementById(`op_time_${index}`);
+            const a = document.getElementById(`op_action_${index}`);
+            const c = document.getElementById(`op_car_${index}`);
+            if(d) d.value = '';
+            if(t) t.value = '';
+            if(a) a.value = '';
+            if(c) c.value = '';
+            showToast(`ล้างข้อมูลข้อ ${index} เรียบร้อย`);
+        }
+
+        // Clear all 7 operation rows
+        function clearAllOpItems() {
+            if(confirm('คุณต้องการล้างข้อมูลปฏิบัติงานทั้ง 7 ข้อหรือไม่?')) {
+                for(let i=1; i<=7; i++) {
+                    clearOpRow(i);
+                }
+                showToast('ล้างข้อมูลปฏิบัติงานทั้งหมดเรียบร้อยแล้ว');
+            }
+        }
+
         // Tab Switcher
         function switchTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-            document.getElementById(tabId).classList.remove('hidden');
+            const target = document.getElementById(tabId);
+            if(target) target.classList.remove('hidden');
 
             const btns = {
                 'tab-driver': 'nav-btn-driver',
@@ -594,10 +672,12 @@
 
             Object.keys(btns).forEach(key => {
                 const btn = document.getElementById(btns[key]);
-                if(key === tabId) {
-                    btn.className = "px-3.5 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2 bg-white/20 text-white shadow";
-                } else {
-                    btn.className = "px-3.5 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2 bg-transparent hover:bg-white/10 text-slate-200";
+                if(btn) {
+                    if(key === tabId) {
+                        btn.className = "px-3.5 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2 bg-white/20 text-white shadow";
+                    } else {
+                        btn.className = "px-3.5 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2 bg-transparent hover:bg-white/10 text-slate-200";
+                    }
                 }
             });
         }
@@ -698,7 +778,7 @@
         function autoFillLeaderOpFromDriver(driverRep) {
             for(let i=1; i<=7; i++) {
                 const actionInput = document.getElementById(`op_action_${i}`);
-                if(!actionInput.value.trim()) {
+                if(actionInput && !actionInput.value.trim()) {
                     document.getElementById(`op_date_${i}`).value = formatDateThai(driverRep.date);
                     document.getElementById(`op_time_${i}`).value = `${driverRep.startTime} - ${driverRep.endTime} น.`;
                     document.getElementById(`op_action_${i}`).value = driverRep.workResult;
@@ -711,6 +791,7 @@
         // Modal for selection
         function openVehicleSelectorModal() {
             const container = document.getElementById('modal-vehicle-list');
+            if(!container) return;
             if(driverReports.length === 0) {
                 container.innerHTML = `<p class="text-sm text-slate-500 text-center py-6">ยังไม่มีข้อมูลรายงานการใช้รถยนต์ในระบบ</p>`;
             } else {
@@ -746,46 +827,52 @@
         // Render History Lists
         function renderHistoryLists() {
             const leaderListEl = document.getElementById('leader-reports-list');
-            document.getElementById('leader-count-badge').textContent = `${leaderReports.length} รายการ`;
+            const leaderBadge = document.getElementById('leader-count-badge');
+            if(leaderBadge) leaderBadge.textContent = `${leaderReports.length} รายการ`;
             
-            if(leaderReports.length === 0) {
-                leaderListEl.innerHTML = `<p class="text-xs text-slate-400 text-center py-4">ยังไม่มีรายงานการออกปฏิบัติงาน</p>`;
-            } else {
-                leaderListEl.innerHTML = leaderReports.map(item => `
-                    <div class="p-3 border border-slate-200 rounded-xl hover:border-korat-blue transition ${selectedLeaderReportId === item.id ? 'bg-blue-50 border-korat-blue' : 'bg-slate-50'}">
-                        <div class="flex justify-between items-start">
-                            <div>
-                                <span class="text-xs font-bold text-korat-blue">เลขที่ ${item.docNumber}</span>
-                                <div class="text-xs font-semibold text-slate-800">ประจำวันที่ ${formatDateThai(item.docDate)}</div>
-                                <div class="text-[11px] text-slate-500">โดย: ${item.leaderNameSigned}</div>
-                            </div>
-                            <div class="flex gap-1">
-                                <button onclick="selectLeaderForPreview('${item.id}')" class="px-2 py-1 bg-blue-600 text-white text-[11px] rounded hover:bg-blue-700">ดูเอกสาร</button>
-                                <button onclick="deleteReport('leader', '${item.id}')" class="px-2 py-1 bg-rose-100 text-rose-600 text-[11px] rounded hover:bg-rose-200"><i class="fa-solid fa-trash"></i></button>
+            if(leaderListEl) {
+                if(leaderReports.length === 0) {
+                    leaderListEl.innerHTML = `<p class="text-xs text-slate-400 text-center py-4">ยังไม่มีรายงานการออกปฏิบัติงาน</p>`;
+                } else {
+                    leaderListEl.innerHTML = leaderReports.map(item => `
+                        <div class="p-3 border border-slate-200 rounded-xl hover:border-korat-blue transition ${selectedLeaderReportId === item.id ? 'bg-blue-50 border-korat-blue' : 'bg-slate-50'}">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <span class="text-xs font-bold text-korat-blue">เลขที่ ${item.docNumber}</span>
+                                    <div class="text-xs font-semibold text-slate-800">ประจำวันที่ ${formatDateThai(item.docDate)}</div>
+                                    <div class="text-[11px] text-slate-500">โดย: ${item.leaderNameSigned || '-'}</div>
+                                </div>
+                                <div class="flex gap-1">
+                                    <button onclick="selectLeaderForPreview('${item.id}')" class="px-2 py-1 bg-blue-600 text-white text-[11px] rounded hover:bg-blue-700">ดูเอกสาร</button>
+                                    <button onclick="deleteReport('leader', '${item.id}')" class="px-2 py-1 bg-rose-100 text-rose-600 text-[11px] rounded hover:bg-rose-200"><i class="fa-solid fa-trash"></i></button>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                `).join('');
+                    `).join('');
+                }
             }
 
             const driverListEl = document.getElementById('driver-reports-list');
-            document.getElementById('driver-count-badge').textContent = `${driverReports.length} รายการ`;
+            const driverBadge = document.getElementById('driver-count-badge');
+            if(driverBadge) driverBadge.textContent = `${driverReports.length} รายการ`;
             
-            if(driverReports.length === 0) {
-                driverListEl.innerHTML = `<p class="text-xs text-slate-400 text-center py-4">ยังไม่มีรายงานการใช้รถยนต์</p>`;
-            } else {
-                driverListEl.innerHTML = driverReports.map(item => `
-                    <div class="p-3 border border-slate-200 rounded-xl bg-slate-50 hover:border-korat-orange transition">
-                        <div class="flex justify-between items-start">
-                            <div>
-                                <span class="text-xs font-bold text-korat-orange">${item.vehicleType} (ทะเบียน ${item.vehiclePlate})</span>
-                                <div class="text-xs font-semibold text-slate-800">วันที่ ${formatDateThai(item.date)} (${item.startTime} - ${item.endTime} น.)</div>
-                                <div class="text-[11px] text-slate-500">พนักงานขับรถ: ${item.driverName}</div>
+            if(driverListEl) {
+                if(driverReports.length === 0) {
+                    driverListEl.innerHTML = `<p class="text-xs text-slate-400 text-center py-4">ยังไม่มีรายงานการใช้รถยนต์</p>`;
+                } else {
+                    driverListEl.innerHTML = driverReports.map(item => `
+                        <div class="p-3 border border-slate-200 rounded-xl bg-slate-50 hover:border-korat-orange transition">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <span class="text-xs font-bold text-korat-orange">${item.vehicleType} (ทะเบียน ${item.vehiclePlate})</span>
+                                    <div class="text-xs font-semibold text-slate-800">วันที่ ${formatDateThai(item.date)} (${item.startTime} - ${item.endTime} น.)</div>
+                                    <div class="text-[11px] text-slate-500">พนักงานขับรถ: ${item.driverName}</div>
+                                </div>
+                                <button onclick="deleteReport('driver', '${item.id}')" class="px-2 py-1 bg-rose-100 text-rose-600 text-[11px] rounded hover:bg-rose-200"><i class="fa-solid fa-trash"></i></button>
                             </div>
-                            <button onclick="deleteReport('driver', '${item.id}')" class="px-2 py-1 bg-rose-100 text-rose-600 text-[11px] rounded hover:bg-rose-200"><i class="fa-solid fa-trash"></i></button>
                         </div>
-                    </div>
-                `).join('');
+                    `).join('');
+                }
             }
         }
 
@@ -811,9 +898,12 @@
         // Helper Functions & Mock Data
         function showToast(msg) {
             const toast = document.getElementById('toast');
-            document.getElementById('toast-message').textContent = msg;
-            toast.classList.remove('hidden');
-            setTimeout(() => toast.classList.add('hidden'), 3500);
+            const toastMsg = document.getElementById('toast-message');
+            if(toastMsg) toastMsg.textContent = msg;
+            if(toast) {
+                toast.classList.remove('hidden');
+                setTimeout(() => toast.classList.add('hidden'), 3500);
+            }
         }
 
         function formatDateThai(dateStr) {
@@ -821,18 +911,6 @@
             const d = new Date(dateStr);
             const months = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
             return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear() + 543}`;
-        }
-
-        function formatDateThaiFull(dateStr) {
-            if(!dateStr) return '';
-            const d = new Date(dateStr);
-            const months = ['มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน', 'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'];
-            return `${d.getDate()} เดือน ${months[d.getMonth()]} พ.ศ. ${d.getFullYear() + 543}`;
-        }
-
-        function toThaiDigit(n) {
-            const thaiDigits = ['๐', '๑', '๒', '๓', '๔', '๕', '๖', '๗', '๘', '๙'];
-            return n.toString().replace(/\d/g, d => thaiDigits[d]);
         }
 
         function persistData() {
@@ -848,6 +926,8 @@
 
             if(driverReports.length === 0 && leaderReports.length === 0) {
                 loadMockData();
+            } else {
+                renderHistoryLists();
             }
         }
 
@@ -875,7 +955,7 @@
                 workResult: 'ออกตรวจจุดเสี่ยงและดับเพลิงหญ้าแห้งบริเวณริมถนนมิตรภาพ',
                 problems: 'การจราจรติดขัดช่วงชั่วโมงเร่งด่วน',
                 driverNameSigned: 'นายสมชาย ใจดี',
-                targetStation: 'สถานีดับเพลิงจอมสุรางค์ยาตร์',
+                targetStation: 'สถานีดับเพลิงจอมสุรางค์ยาตร์ ฝ่ายปกครอง สำนักปลัดเทศบาล',
                 signatureImg: null,
                 timestamp: new Date().toISOString()
             };
