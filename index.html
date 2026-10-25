@@ -287,8 +287,14 @@
                                     <input type="text" id="driver_name_signed" placeholder="นาย..." required class="w-full px-3.5 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-orange-500">
                                 </div>
                                 <div>
-                                    <label class="block text-xs font-semibold text-slate-700 mb-1">หัวหน้าชุดเวรเตรียมพร้อม (ผู้รับรายงาน)</label>
-                                    <input type="text" id="leader_name_receiver" placeholder="นายสุรนาท วัฒนากลาง" class="w-full px-3.5 py-2 text-sm border border-slate-300 rounded-lg">
+                                    <label class="block text-xs font-semibold text-slate-700 mb-1">เรียน หัวหน้าสถานีดับเพลิง <span class="text-red-500">*</span></label>
+                                    <select id="driver_target_station" required class="w-full px-3.5 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-orange-500">
+                                        <option value="สถานีดับเพลิงจอมสุรางค์ยาตร์">สถานีดับเพลิงจอมสุรางค์ยาตร์</option>
+                                        <option value="สถานีดับเพลิงสุรนารายณ์">สถานีดับเพลิงสุรนารายณ์</option>
+                                        <option value="สถานีดับเพลิงการเคหะฯ">สถานีดับเพลิงการเคหะฯ</option>
+                                        <option value="สถานีดับเพลิงศาลาทอง">สถานีดับเพลิงศาลาทอง</option>
+                                        <option value="สถานีดับเพลิงจามจุรี">สถานีดับเพลิงจามจุรี</option>
+                                    </select>
                                 </div>
                             </div>
                         </div>
@@ -409,7 +415,7 @@
                             <div class="flex-grow space-y-3 w-full">
                                 <div>
                                     <label class="block text-xs font-semibold text-slate-700 mb-1">ชื่อ-นามสกุล หัวหน้าชุดเวรผู้รายงาน <span class="text-red-500">*</span></label>
-                                    <input type="text" id="leader_name_signed" value="นายสุรนาท วัฒนากลาง" required class="w-full px-3.5 py-2 text-sm border border-slate-300 rounded-lg">
+                                    <input type="text" id="leader_name_signed" placeholder="นาย..." required class="w-full px-3.5 py-2 text-sm border border-slate-300 rounded-lg">
                                 </div>
                                 <div>
                                     <label class="block text-xs font-semibold text-slate-700 mb-1">ตำแหน่งในรายงาน <span class="text-red-500">*</span></label>
@@ -661,7 +667,7 @@
                 workResult: document.getElementById('driver_work_result').value,
                 problems: document.getElementById('driver_problems').value,
                 driverNameSigned: document.getElementById('driver_name_signed').value,
-                leaderReceiver: document.getElementById('leader_name_receiver').value,
+                targetStation: document.getElementById('driver_target_station').value,
                 signatureImg: sigData,
                 timestamp: new Date().toISOString()
             };
@@ -1028,7 +1034,7 @@
                         </div>
 
                         <div style="margin-top: 15px;">
-                            <div>เรียน หัวหน้าสถานีดับเพลิง <span class="dot-line" style="min-width: 200px; font-weight:bold;">${stationNameOnly}</span></div>
+                            <div>เรียน หัวหน้า<span class="dot-line" style="min-width: 200px; font-weight:bold;">${dRep.targetStation || stationNameOnly}</span></div>
                             <div style="padding-left: 40px; font-size: 14pt;">เพื่อโปรดทราบ</div>
                         </div>
                     </div>
@@ -1039,7 +1045,7 @@
                             <td style="width: 50%; vertical-align: bottom;">
                                 <div>ลงชื่อ..........................................................</div>
                                 <div style="font-size: 13pt; color: #444; margin-top: 4px;">ตำแหน่ง หัวหน้าชุดเวรเตรียมพร้อม</div>
-                                <div style="font-weight: bold; margin-top: 15px;">(${dRep.leaderReceiver || leaderRep.leaderNameSigned || '...................................................'})</div>
+                                <div style="font-weight: bold; margin-top: 15px;">(${leaderRep.leaderNameSigned || '...................................................'})</div>
                             </td>
                             <td style="width: 50%; vertical-align: bottom;">
                                 <div>ลงชื่อ..........................................................</div>
@@ -1145,7 +1151,7 @@
                 workResult: 'ออกตรวจจุดเสี่ยงและดับเพลิงหญ้าแห้งบริเวณริมถนนมิตรภาพ',
                 problems: 'การจราจรติดขัดช่วงชั่วโมงเร่งด่วน',
                 driverNameSigned: 'นายสมชาย ใจดี',
-                leaderReceiver: 'นายสุรนาท วัฒนากลาง',
+                targetStation: 'สถานีดับเพลิงจอมสุรางค์ยาตร์',
                 signatureImg: null,
                 timestamp: new Date().toISOString()
             };
@@ -1167,7 +1173,7 @@
                 overallResult: 'การปฏิบัติงานเป็นไปด้วยความเรียบร้อย สามารถช่วยเหลือประชาชนและระงับเหตุได้ทันท่วงที',
                 equipmentStatus: 'ใช้การได้ดีทุกรายการ',
                 problems: 'ไม่มีปัญหาและอุปสรรคในการปฏิบัติงาน',
-                leaderNameSigned: 'นายสุรนาท วัฒนากลาง',
+                leaderNameSigned: '',
                 leaderPositionTitle: 'หัวหน้าชุดเวรเตรียมพร้อมชุดที่ ๑',
                 signatureImg: null,
                 timestamp: new Date().toISOString()
