@@ -1,839 +1,1141 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ระบบบันทึกรายงานการปฏิบัติงานประจำวัน - เทศบาลนครนครราชสีมา</title>
-  <!-- Tailwind CSS -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <!-- FontAwesome -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <!-- Google Fonts: Sarabun (TH Sarabun) -->
-  <link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
-  <!-- html2pdf.js for A4 Export -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-  
-  <style>
-    body {
-      font-family: 'Sarabun', sans-serif;
-    }
-    
-    /* สไตล์สำหรับเอกสารราชการ A4 */
-    .document-page {
-      font-family: 'Sarabun', sans-serif;
-      font-size: 16pt;
-      line-height: 1.5;
-      color: #000;
-      background: #fff;
-      width: 210mm;
-      min-height: 297mm;
-      padding: 20mm 20mm 20mm 25mm; /* ขอบ Top/Right/Bottom/Left ตามมาตรฐานสารบรรณ */
-      box-sizing: border-box;
-      margin: 0 auto 20px auto;
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-      page-break-after: always;
-      position: relative;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบบันทึกรายงานการปฏิบัติงานประจำวัน E-Operation Report</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Signature Pad -->
+    <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
+    <!-- html2pdf.js for PDF Generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <!-- Google Fonts: Sarabun & Prompt -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&family=TH+Sarabun+New:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
 
-    .document-page:last-child {
-      page-break-after: auto;
-    }
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        korat: {
+                            orange: '#F26522',
+                            blue: '#1E3A8A',
+                            navy: '#0F172A',
+                            gold: '#D97706',
+                            light: '#F8FAFC'
+                        }
+                    },
+                    fontFamily: {
+                        prompt: ['Prompt', 'sans-serif'],
+                        sarabun: ['"TH Sarabun New"', 'Sarabun', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Prompt', sans-serif;
+            background-color: #F1F5F9;
+        }
 
-    /* ตราครุฑราชการขนาด 3 ซม. */
-    .garuda-img {
-      width: 3cm;
-      height: 3cm;
-      object-fit: contain;
-    }
+        /* Official Document Styles (TH Sarabun PSK style for PDF export) */
+        .gov-document {
+            font-family: 'TH Sarabun New', 'Sarabun', sans-serif;
+            color: #000;
+            line-height: 1.25;
+            font-size: 16pt;
+            background: white;
+            box-sizing: border-box;
+        }
 
-    /* การตั้งค่าสำหรับการพิมพ์ / พิมพ์เป็น PDF */
-    @media print {
-      body {
-        background: #fff !important;
-        padding: 0 !important;
-      }
-      .no-print {
-        display: none !important;
-      }
-      .document-page {
-        box-shadow: none !important;
-        margin: 0 !important;
-        width: 100% !important;
-        min-height: 100vh !important;
-        padding: 15mm 15mm 15mm 20mm !important;
-      }
-    }
+        .gov-page {
+            width: 210mm;
+            min-height: 297mm;
+            padding: 20mm 20mm 20mm 25mm;
+            margin: 0 auto;
+            background: white;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            position: relative;
+            page-break-after: always;
+        }
 
-    /* คลาสสำหรับบังคับขึ้นหน้าใหม่ใน PDF */
-    .html2pdf__page-break {
-      page-break-before: always;
-    }
-  </style>
+        @media print {
+            body {
+                background: white !important;
+                padding: 0 !important;
+            }
+            .no-print {
+                display: none !important;
+            }
+            .gov-page {
+                box-shadow: none !important;
+                margin: 0 !important;
+                width: 100% !important;
+                padding: 15mm 15mm 15mm 20mm !important;
+                page-break-after: always !important;
+            }
+        }
+
+        /* Signature Canvas styling */
+        .sig-canvas {
+            border: 2px dashed #CBD5E1;
+            border-radius: 0.5rem;
+            background-color: #FAFAFA;
+            touch-action: none;
+        }
+    </style>
 </head>
-<body class="bg-gray-100 min-h-screen">
+<body class="min-h-screen text-slate-800 flex flex-col">
 
-  <!-- Header / Navigation Bar -->
-  <header class="bg-blue-900 text-white shadow-lg no-print">
-    <div class="max-w-7xl mx-auto px-4 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
-      <div class="flex items-center gap-3">
-        <i class="fa-solid fa-shield-halved text-amber-400 text-3xl"></i>
-        <div>
-          <h1 class="text-xl font-bold">ระบบบันทึกรายงานการปฏิบัติงานประจำวัน</h1>
-          <p class="text-xs text-blue-200">ฝ่ายปกครอง สำนักปลัดเทศบาล เทศบาลนครนครราชสีมา</p>
-        </div>
-      </div>
-      <div class="flex gap-2">
-        <button onclick="scrollToSection('form-section')" class="px-3 py-1.5 bg-blue-800 hover:bg-blue-700 text-sm rounded-lg transition">
-          <i class="fa-solid fa-pen-to-square mr-1"></i> กรอกข้อมูล
-        </button>
-        <button onclick="scrollToSection('preview-section')" class="px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-sm font-semibold text-slate-900 rounded-lg transition">
-          <i class="fa-solid fa-file-pdf mr-1"></i> ดูตัวอย่าง & PDF
-        </button>
-      </div>
-    </div>
-  </header>
-
-  <!-- Main Content -->
-  <main class="max-w-7xl mx-auto p-4 md:p-6 space-y-8">
-
-    <!-- FORM SECTION -->
-    <section id="form-section" class="bg-white rounded-xl shadow-md p-6 no-print">
-      <h2 class="text-lg font-bold text-gray-800 border-b pb-3 mb-6 flex items-center gap-2">
-        <i class="fa-solid fa-file-lines text-blue-600"></i> บันทึกข้อมูลการปฏิบัติงานประจำวัน
-      </h2>
-
-      <form id="reportForm" onsubmit="handleFormSubmit(event)" class="space-y-6">
-        
-        <!-- ข้อมูลส่วนหัวบันทึกข้อความ -->
-        <div class="bg-blue-50/50 p-4 rounded-lg border border-blue-100 space-y-4">
-          <h3 class="font-semibold text-blue-900 text-sm border-b border-blue-200 pb-2">ข้อมูลส่วนราชการ & ชุดเวร</h3>
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <label class="block text-xs font-semibold text-gray-700 mb-1">สถานีดับเพลิง *</label>
-              <select id="station" onchange="updatePreview()" class="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 text-sm" required>
-                <option value="สถานีดับเพลิงจอมสุรางค์ยาตร์">สถานีดับเพลิงจอมสุรางค์ยาตร์</option>
-                <option value="สถานีดับเพลิงสุรนารายณ์">สถานีดับเพลิงสุรนารายณ์</option>
-                <option value="สถานีดับเพลิงการเคหะฯ">สถานีดับเพลิงการเคหะฯ</option>
-                <option value="สถานีดับเพลิงศาลาทอง">สถานีดับเพลิงศาลาทอง</option>
-                <option value="สถานีดับเพลิงจามจุรี">สถานีดับเพลิงจามจุรี</option>
-              </select>
-            </div>
-            <div>
-              <label class="block text-xs font-semibold text-gray-700 mb-1">ชุดเวรเตรียมพร้อมชุดที่ *</label>
-              <input type="text" id="shiftTeam" value="1" oninput="updatePreview()" class="w-full p-2 border border-gray-300 rounded-md text-sm" required>
-            </div>
-            <div>
-              <label class="block text-xs font-semibold text-gray-700 mb-1">วันที่รายงาน *</label>
-              <input type="date" id="reportDate" onchange="updatePreview()" class="w-full p-2 border border-gray-300 rounded-md text-sm" required>
-            </div>
-          </div>
-
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label class="block text-xs font-semibold text-gray-700 mb-1">ชื่อ-นามสกุล หัวหน้าชุดเวร (ผู้รายงาน) *</label>
-              <input type="text" id="reporterName" value="นายสุรนาท วัฒนากลาง" oninput="updatePreview()" class="w-full p-2 border border-gray-300 rounded-md text-sm" required>
-            </div>
-            <div>
-              <label class="block text-xs font-semibold text-gray-700 mb-1">ตำแหน่ง *</label>
-              <input type="text" id="reporterPos" value="หัวหน้าชุดเวรเตรียมพร้อม" oninput="updatePreview()" class="w-full p-2 border border-gray-300 rounded-md text-sm" required>
-            </div>
-          </div>
-        </div>
-
-        <!-- รายการรถยนต์และภารกิจที่ออกปฏิบัติงาน -->
-        <div class="bg-gray-50 p-4 rounded-lg border border-gray-200 space-y-4">
-          <div class="flex justify-between items-center border-b pb-2">
-            <h3 class="font-semibold text-gray-800 text-sm">ข้อมูลรายการออกปฏิบัติงาน / พนักงานขับรถ</h3>
-          </div>
-
-          <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div>
-              <label class="block text-xs font-semibold text-gray-700 mb-1">ชื่อพนักงานขับรถ *</label>
-              <input type="text" id="driverName" placeholder="นายสมชาย ใจดี" class="w-full p-2 border border-gray-300 rounded-md text-sm">
-            </div>
-            <div>
-              <label class="block text-xs font-semibold text-gray-700 mb-1">ตำแหน่ง *</label>
-              <input type="text" id="driverPos" value="พนักงานขับรถ" class="w-full p-2 border border-gray-300 rounded-md text-sm">
-            </div>
-            <div>
-              <label class="block text-xs font-semibold text-gray-700 mb-1">รถยนต์ (ชนิด/ประเภท) *</label>
-              <input type="text" id="carType" placeholder="รถบรรทุกน้ำดับเพลิง" class="w-full p-2 border border-gray-300 rounded-md text-sm">
-            </div>
-            <div>
-              <label class="block text-xs font-semibold text-gray-700 mb-1">หมายเลขทะเบียน *</label>
-              <input type="text" id="carPlate" placeholder="กข-1234 นครราชสีมา" class="w-full p-2 border border-gray-300 rounded-md text-sm">
-            </div>
-          </div>
-
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div class="md:col-span-2">
-              <label class="block text-xs font-semibold text-gray-700 mb-1">ภารกิจที่ออกปฏิบัติงาน *</label>
-              <input type="text" id="mission" placeholder="ระงับเหตุเพลิงไหม้หญ้า หรือตรวจเช็คจุดเสี่ยง" class="w-full p-2 border border-gray-300 rounded-md text-sm">
-            </div>
-            <div class="grid grid-cols-2 gap-2">
-              <div>
-                <label class="block text-xs font-semibold text-gray-700 mb-1">ตั้งแต่เวลา</label>
-                <input type="text" id="startTime" placeholder="08.30" class="w-full p-2 border border-gray-300 rounded-md text-sm">
-              </div>
-              <div>
-                <label class="block text-xs font-semibold text-gray-700 mb-1">ถึงเวลา</label>
-                <input type="text" id="endTime" placeholder="16.30" class="w-full p-2 border border-gray-300 rounded-md text-sm">
-              </div>
-            </div>
-          </div>
-
-          <!-- รายชื่อผู้ร่วมปฏิบัติงาน -->
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 border-t pt-3">
-            <div>
-              <label class="block text-xs font-semibold text-gray-700 mb-1">ผู้ร่วมปฏิบัติงาน (สูงสุด 6 คน)</label>
-              <div class="space-y-2" id="crewListContainer">
-                <input type="text" class="crew-input w-full p-1.5 border border-gray-300 rounded text-xs" placeholder="1. นาย..." />
-                <input type="text" class="crew-input w-full p-1.5 border border-gray-300 rounded text-xs" placeholder="2. นาย..." />
-              </div>
-              <button type="button" onclick="addCrewInput()" class="mt-2 text-xs text-blue-600 font-semibold hover:underline">+ เพิ่มผู้ร่วมงาน</button>
-            </div>
-
-            <div>
-              <label class="block text-xs font-semibold text-gray-700 mb-1">พนักงานที่ไม่ร่วมปฏิบัติงาน & สาเหตุ</label>
-              <div class="space-y-2" id="absentListContainer">
-                <div class="flex gap-1">
-                  <input type="text" class="absent-name w-1/2 p-1.5 border rounded text-xs" placeholder="ชื่อ-นามสกุล" />
-                  <input type="text" class="absent-reason w-1/2 p-1.5 border rounded text-xs" placeholder="สาเหตุ (เช่น ลาป่วย)" />
+    <!-- Top Navigation Header -->
+    <header class="bg-gradient-to-r from-korat-navy via-korat-blue to-korat-orange text-white shadow-lg no-print sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-wrap justify-between items-center gap-4">
+            <div class="flex items-center space-x-3">
+                <div class="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center border border-white/20 shadow-inner">
+                    <i class="fa-solid fa-truck-fire text-amber-400 text-2xl"></i>
                 </div>
-              </div>
-              <button type="button" onclick="addAbsentInput()" class="mt-2 text-xs text-blue-600 font-semibold hover:underline">+ เพิ่มผู้ไม่ออกปฏิบัติงาน</button>
+                <div>
+                    <h1 class="font-bold text-lg sm:text-xl tracking-tight leading-tight">E-Operation Report</h1>
+                    <p class="text-xs text-orange-200">ระบบบันทึกรายงานการปฏิบัติงานประจำวัน | งานป้องกันและบรรเทาสาธารณภัย เทศบาลนครนครราชสีมา</p>
+                </div>
             </div>
-          </div>
 
-          <!-- ผลการปฏิบัติงาน & อุปสรรค -->
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 border-t pt-3">
-            <div>
-              <label class="block text-xs font-semibold text-gray-700 mb-1">ผลการปฏิบัติงาน</label>
-              <textarea id="carResult" rows="2" class="w-full p-2 border border-gray-300 rounded-md text-xs" placeholder="ปฏิบัติงานเสร็จสิ้นด้วยความเรียบร้อย"></textarea>
+            <div class="flex items-center space-x-2">
+                <button onclick="switchTab('tab-driver')" id="nav-btn-driver" class="px-3.5 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2 bg-white/20 text-white shadow">
+                    <i class="fa-solid fa-id-card"></i> <span>1. รายงานพนักงานขับรถ</span>
+                </button>
+                <button onclick="switchTab('tab-leader')" id="nav-btn-leader" class="px-3.5 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2 bg-transparent hover:bg-white/10 text-slate-200">
+                    <i class="fa-solid fa-user-shield"></i> <span>2. รายงานหัวหน้าชุดเวร</span>
+                </button>
+                <button onclick="switchTab('tab-history')" id="nav-btn-history" class="px-3.5 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2 bg-transparent hover:bg-white/10 text-slate-200">
+                    <i class="fa-solid fa-folder-open"></i> <span>ประวัติ & พิมพ์เอกสาร</span>
+                </button>
             </div>
-            <div>
-              <label class="block text-xs font-semibold text-gray-700 mb-1">อุปกรณ์การปฏิบัติงาน</label>
-              <textarea id="carEquipment" rows="2" class="w-full p-2 border border-gray-300 rounded-md text-xs" placeholder="ใช้การได้ดี"></textarea>
-            </div>
-            <div>
-              <label class="block text-xs font-semibold text-gray-700 mb-1">ปัญหาหรืออุปสรรค</label>
-              <textarea id="carObstacle" rows="2" class="w-full p-2 border border-gray-300 rounded-md text-xs" placeholder="ไม่มี"></textarea>
-            </div>
-          </div>
+        </div>
+    </header>
 
-          <!-- ลายเซ็นพนักงานขับรถ -->
-          <div class="border-t pt-3 bg-white p-3 rounded border">
-            <label class="block text-xs font-semibold text-gray-700 mb-1">ลายเซ็นสดพนักงานขับรถ (วาดด้วยเมาส์หรือนิ้วสัมผัส)</label>
-            <div class="flex flex-col sm:flex-row items-center gap-3">
-              <canvas id="driverSigCanvas" width="300" height="100" class="border border-gray-400 bg-white rounded cursor-crosshair"></canvas>
-              <button type="button" onclick="clearCanvas('driverSigCanvas')" class="px-3 py-1 bg-gray-200 hover:bg-gray-300 text-xs rounded">ล้างลายเซ็น</button>
-            </div>
-          </div>
+    <!-- Main Container -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
 
-          <div class="text-right">
-            <button type="button" onclick="addCarEntry()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-lg shadow">
-              <i class="fa-solid fa-plus mr-1"></i> เพิ่มรายการรถยนต์นี้เข้าในรายงานประจำวัน
-            </button>
-          </div>
+        <!-- Notification Toast -->
+        <div id="toast" class="hidden fixed bottom-5 right-5 z-50 bg-emerald-600 text-white px-5 py-3 rounded-xl shadow-2xl flex items-center space-x-3 transition-all">
+            <i class="fa-solid fa-circle-check text-xl"></i>
+            <span id="toast-message" class="text-sm font-medium">บันทึกข้อมูลเรียบร้อยแล้ว</span>
         </div>
 
-        <!-- ตารางรายการรถที่เพิ่มไว้ -->
-        <div class="border rounded-lg overflow-hidden">
-          <table class="w-full text-left text-xs text-gray-600">
-            <thead class="bg-gray-100 text-gray-800 uppercase font-semibold">
-              <tr>
-                <th class="p-2 border-b">#</th>
-                <th class="p-2 border-b">พนักงานขับรถ</th>
-                <th class="p-2 border-b">รถยนต์/ทะเบียน</th>
-                <th class="p-2 border-b">ภารกิจ</th>
-                <th class="p-2 border-b">เวลา</th>
-                <th class="p-2 border-b text-center">จัดการ</th>
-              </tr>
-            </thead>
-            <tbody id="carEntriesTable">
-              <!-- JS จะสร้างแถวตารางให้อัตโนมัติ -->
-            </tbody>
-          </table>
+        <!-- TAB 1: Driver Vehicle Operation Form -->
+        <section id="tab-driver" class="tab-content block">
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden mb-6">
+                <div class="bg-gradient-to-r from-orange-500 to-amber-600 px-6 py-4 text-white flex justify-between items-center">
+                    <div class="flex items-center space-x-3">
+                        <i class="fa-solid fa-car-side text-2xl"></i>
+                        <div>
+                            <h2 class="font-semibold text-lg">แบบฟอร์ม 1: รายงานการใช้รถยนต์ออกปฏิบัติงาน</h2>
+                            <p class="text-xs text-orange-100">สำหรับเจ้าหน้าที่พนักงานขับรถกรอกข้อมูลการนำรถออกปฏิบัติการ</p>
+                        </div>
+                    </div>
+                    <span class="bg-white/20 px-3 py-1 rounded-full text-xs font-semibold">พนักงานขับรถ</span>
+                </div>
+
+                <form id="driverForm" onsubmit="saveDriverReport(event)" class="p-6 space-y-6">
+                    <!-- Basic Info -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">วันที่ปฏิบัติงาน <span class="text-red-500">*</span></label>
+                            <input type="date" id="driver_date" required class="w-full px-3.5 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">ชื่อ-นามสกุล (พนักงานขับรถ) <span class="text-red-500">*</span></label>
+                            <input type="text" id="driver_name" placeholder="นาย..." required class="w-full px-3.5 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">ตำแหน่ง <span class="text-red-500">*</span></label>
+                            <input type="text" id="driver_position" value="พนักงานขับรถ" required class="w-full px-3.5 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:outline-none">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 bg-orange-50/50 p-4 rounded-xl border border-orange-100">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">ยี่ห้อ / ชนิดรถยนต์ <span class="text-red-500">*</span></label>
+                            <input type="text" id="vehicle_type" placeholder="เช่น รถดับเพลิงอาคาร, รถหกล้อ" required class="w-full px-3.5 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">หมายเลขทะเบียน <span class="text-red-500">*</span></label>
+                            <input type="text" id="vehicle_plate" placeholder="เช่น กข 1234 นครราชสีมา" required class="w-full px-3.5 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">ตั้งแต่เวลา (น.) <span class="text-red-500">*</span></label>
+                            <input type="time" id="start_time" required class="w-full px-3.5 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">ถึงเวลา (น.) <span class="text-red-500">*</span></label>
+                            <input type="time" id="end_time" required class="w-full px-3.5 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:outline-none">
+                        </div>
+                    </div>
+
+                    <!-- Staff lists -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Attending personnel -->
+                        <div class="border border-slate-200 rounded-xl p-4 bg-slate-50/50">
+                            <div class="flex justify-between items-center mb-3">
+                                <h3 class="text-sm font-semibold text-slate-800 flex items-center gap-2">
+                                    <i class="fa-solid fa-users text-emerald-600"></i> ผู้ร่วมปฏิบัติงาน (สูงสุด 6 คน)
+                                </h3>
+                            </div>
+                            <div class="space-y-2" id="attending-staff-container">
+                                <input type="text" class="attending-staff w-full px-3 py-1.5 text-sm border border-slate-300 rounded-lg" placeholder="1. ชื่อ-นามสกุล ผู้ร่วมปฏิบัติงาน">
+                                <input type="text" class="attending-staff w-full px-3 py-1.5 text-sm border border-slate-300 rounded-lg" placeholder="2. ชื่อ-นามสกุล ผู้ร่วมปฏิบัติงาน">
+                                <input type="text" class="attending-staff w-full px-3 py-1.5 text-sm border border-slate-300 rounded-lg" placeholder="3. ชื่อ-นามสกุล ผู้ร่วมปฏิบัติงาน">
+                                <input type="text" class="attending-staff w-full px-3 py-1.5 text-sm border border-slate-300 rounded-lg" placeholder="4. ชื่อ-นามสกุล ผู้ร่วมปฏิบัติงาน">
+                                <input type="text" class="attending-staff w-full px-3 py-1.5 text-sm border border-slate-300 rounded-lg" placeholder="5. ชื่อ-นามสกุล ผู้ร่วมปฏิบัติงาน">
+                                <input type="text" class="attending-staff w-full px-3 py-1.5 text-sm border border-slate-300 rounded-lg" placeholder="6. ชื่อ-นามสกุล ผู้ร่วมปฏิบัติงาน">
+                            </div>
+                        </div>
+
+                        <!-- Absent personnel -->
+                        <div class="border border-slate-200 rounded-xl p-4 bg-slate-50/50">
+                            <h3 class="text-sm font-semibold text-slate-800 mb-3 flex items-center gap-2">
+                                <i class="fa-solid fa-user-slash text-rose-500"></i> พนักงานประจำรถไม่ออกร่วมปฏิบัติงาน (ถ้ามี)
+                            </h3>
+                            <div class="space-y-3">
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                    <input type="text" id="absent_name_1" placeholder="1. ชื่อ-นามสกุล" class="px-3 py-1.5 text-sm border border-slate-300 rounded-lg">
+                                    <input type="text" id="absent_reason_1" placeholder="สาเหตุเนื่องจาก (ลา/ป่วย/ติดภารกิจ)" class="px-3 py-1.5 text-sm border border-slate-300 rounded-lg">
+                                </div>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                    <input type="text" id="absent_name_2" placeholder="2. ชื่อ-นามสกุล" class="px-3 py-1.5 text-sm border border-slate-300 rounded-lg">
+                                    <input type="text" id="absent_reason_2" placeholder="สาเหตุเนื่องจาก (ลา/ป่วย/ติดภารกิจ)" class="px-3 py-1.5 text-sm border border-slate-300 rounded-lg">
+                                </div>
+                            </div>
+
+                            <div class="mt-4 pt-3 border-t border-slate-200">
+                                <label class="block text-xs font-semibold text-slate-700 mb-1">ส่งรายงานเรียน หัวหน้าสถานีดับเพลิง <span class="text-red-500">*</span></label>
+                                <input type="text" id="station_name" value="สุรนารี" placeholder="เช่น สุรนารี, โพธิ์กลาง" required class="w-full px-3 py-1.5 text-sm border border-slate-300 rounded-lg">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Work Details & Obstacles -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">ผลการปฏิบัติงาน <span class="text-red-500">*</span></label>
+                            <textarea id="driver_work_result" rows="3" required placeholder="ระบุภารกิจและสถานที่ เช่น ออกระงับเหตุเพลิงไหม้หญ้า บริเวณถนนมิตรภาพ..." class="w-full px-3.5 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:outline-none"></textarea>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">อุปสรรคและปัญหา</label>
+                            <textarea id="driver_problems" rows="3" placeholder="ระบุอุปสรรคและปัญหาในการปฏิบัติงาน (ถ้าไม่มีใส่ - )" class="w-full px-3.5 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:outline-none">-</textarea>
+                        </div>
+                    </div>
+
+                    <!-- Signature Pad Section -->
+                    <div class="border-t border-slate-200 pt-4">
+                        <h3 class="text-sm font-semibold text-slate-800 mb-3 flex items-center gap-2">
+                            <i class="fa-solid fa-pen-nib text-korat-blue"></i> ลายเซ็นต์ดิจิทัล พนักงานขับรถผู้รายงาน
+                        </h3>
+                        <div class="flex flex-col sm:flex-row gap-4 items-start">
+                            <div class="w-full sm:w-80">
+                                <canvas id="driver-sig-canvas" width="320" height="130" class="sig-canvas w-full"></canvas>
+                                <div class="flex justify-between mt-1.5">
+                                    <button type="button" onclick="clearSignature('driver')" class="text-xs text-rose-600 hover:underline flex items-center gap-1">
+                                        <i class="fa-solid fa-eraser"></i> ล้างลายเซ็นต์
+                                    </button>
+                                    <span class="text-xs text-slate-400">ใช้นิ้วหรือเมาส์เซ็นชื่อ</span>
+                                </div>
+                            </div>
+                            <div class="flex-grow space-y-3 w-full">
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-700 mb-1">พิมพ์ชื่อ-นามสกุล กำกับลายเซ็น <span class="text-red-500">*</span></label>
+                                    <input type="text" id="driver_name_signed" placeholder="นาย..." required class="w-full px-3.5 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-orange-500">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-700 mb-1">หัวหน้าชุดเวรเตรียมพร้อม (ผู้รับรายงาน)</label>
+                                    <input type="text" id="leader_name_receiver" placeholder="เช่น นายสุรนาท วัฒนากลาง" class="w-full px-3.5 py-2 text-sm border border-slate-300 rounded-lg">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div class="flex justify-end pt-4 border-t border-slate-200">
+                        <button type="submit" class="bg-gradient-to-r from-orange-500 to-amber-600 text-white font-medium px-6 py-2.5 rounded-xl shadow-md hover:opacity-90 transition flex items-center gap-2">
+                            <i class="fa-solid fa-floppy-disk"></i> บันทึกรายงานการใช้รถยนต์
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        <!-- TAB 2: Leader Operation Summary Form -->
+        <section id="tab-leader" class="tab-content hidden">
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden mb-6">
+                <div class="bg-gradient-to-r from-korat-blue to-blue-900 px-6 py-4 text-white flex justify-between items-center">
+                    <div class="flex items-center space-x-3">
+                        <i class="fa-solid fa-file-signature text-2xl"></i>
+                        <div>
+                            <h2 class="font-semibold text-lg">แบบฟอร์ม 2: รายงานการออกปฏิบัติงาน (บันทึกข้อความ)</h2>
+                            <p class="text-xs text-blue-100">สำหรับหัวหน้าชุดเวรเตรียมพร้อม รวบรวมและสรุปผลเสนอผู้บังคับบัญชา</p>
+                        </div>
+                    </div>
+                    <span class="bg-white/20 px-3 py-1 rounded-full text-xs font-semibold">หัวหน้าชุดเวร</span>
+                </div>
+
+                <form id="leaderForm" onsubmit="saveLeaderReport(event)" class="p-6 space-y-6">
+
+                    <!-- Section 1: Gov Header Info -->
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-4">
+                        <h3 class="text-sm font-semibold text-korat-blue flex items-center gap-2 border-b border-slate-200 pb-2">
+                            <i class="fa-solid fa-landmark"></i> ส่วนที่ 1: ข้อมูลส่วนราชการ / เลขที่หนังสือ / วันที่
+                        </h3>
+                        <div class="grid grid-cols-1 md:grid-cols-1 gap-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 mb-1">ส่วนราชการ <span class="text-red-500">*</span></label>
+                                <select id="gov_department" required class="w-full px-3.5 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-korat-blue">
+                                    <option value="สถานีดับเพลิงจอมสุรางค์ยาตร์ ฝ่ายปกครอง สำนักปลัดเทศบาล">สถานีดับเพลิงจอมสุรางค์ยาตร์ ฝ่ายปกครอง สำนักปลัดเทศบาล</option>
+                                    <option value="สถานีดับเพลิงสุรนารายณ์ ฝ่ายปกครอง สำนักปลัดเทศบาล">สถานีดับเพลิงสุรนารายณ์ ฝ่ายปกครอง สำนักปลัดเทศบาล</option>
+                                    <option value="สถานีดับเพลิงการเคหะฯ ฝ่ายปกครอง สำนักปลัดเทศบาล">สถานีดับเพลิงการเคหะฯ ฝ่ายปกครอง สำนักปลัดเทศบาล</option>
+                                    <option value="สถานีดับเพลิงศาลาทอง ฝ่ายปกครอง สำนักปลัดเทศบาล">สถานีดับเพลิงศาลาทอง ฝ่ายปกครอง สำนักปลัดเทศบาล</option>
+                                    <option value="สถานีดับเพลิงจามจุรี ฝ่ายปกครอง สำนักปลัดเทศบาล">สถานีดับเพลิงจามจุรี ฝ่ายปกครอง สำนักปลัดเทศบาล</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 mb-1">ที่ (เลขที่หนังสือ) <span class="text-red-500">*</span></label>
+                                <input type="text" id="doc_number" value="นม 52001/" placeholder="เช่น นม 52001/123" required class="w-full px-3.5 py-2 text-sm border border-slate-300 rounded-lg">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 mb-1">ลงวันที่ <span class="text-red-500">*</span></label>
+                                <input type="date" id="doc_date" required class="w-full px-3.5 py-2 text-sm border border-slate-300 rounded-lg">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 mb-1">หัวหน้าชุดเวรเตรียมพร้อมชุดที่ <span class="text-red-500">*</span></label>
+                                <input type="text" id="shift_team_no" value="๑" required class="w-full px-3.5 py-2 text-sm border border-slate-300 rounded-lg">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Section 2: Vehicle Reports Selector & Duty List -->
+                    <div class="bg-blue-50/40 p-4 rounded-xl border border-blue-100 space-y-4">
+                        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-blue-200 pb-2">
+                            <h3 class="text-sm font-semibold text-korat-blue flex items-center gap-2">
+                                <i class="fa-solid fa-list-check"></i> ส่วนที่ 2: ดึงรายการปฏิบัติงานจากการบันทึกใช้รถยนต์ (สูงสุด 7 รายการ)
+                            </h3>
+                            <button type="button" onclick="openVehicleSelectorModal()" class="text-xs bg-korat-blue text-white px-3 py-1.5 rounded-lg hover:bg-blue-800 transition flex items-center gap-1">
+                                <i class="fa-solid fa-plus-circle"></i> เลือกจากรายงานรถยนต์ในระบบ
+                            </button>
+                        </div>
+
+                        <!-- 7 Operation entries -->
+                        <div id="leader-op-items" class="space-y-3">
+                            <!-- Operation item rows generated via JS -->
+                        </div>
+                    </div>
+
+                    <!-- Evaluation & Issues -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="md:col-span-3">
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">ผลการออกปฏิบัติงานภาพรวม <span class="text-red-500">*</span></label>
+                            <textarea id="overall_result" rows="2" required placeholder="สรุปผลการออกปฏิบัติงานภาพรวมประจำวัน..." class="w-full px-3.5 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-korat-blue">ปฏิบัติงานเป็นไปด้วยความเรียบร้อย สามารถระงับเหตุและช่วยเหลือประชาชนได้อย่างมีประสิทธิภาพ</textarea>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">อุปกรณ์ที่นำไปปฏิบัติงาน <span class="text-red-500">*</span></label>
+                            <select id="equipment_status" class="w-full px-3.5 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-korat-blue">
+                                <option value="ใช้การได้ดี">ใช้การได้ดีทุกรายการ</option>
+                                <option value="ชำรุดบางส่วน">ชำรุดบางรายการ (ระบุในหมายเหตุ)</option>
+                                <option value="ต้องปรับปรุงแก้ไข">ต้องปรับปรุง/ซ่อมแซม</option>
+                            </select>
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">ขณะปฏิบัติงานมีปัญหาหรืออุปสรรคหรือไม่ <span class="text-red-500">*</span></label>
+                            <input type="text" id="leader_problems" value="ไม่มีปัญหาและอุปสรรคในการปฏิบัติงาน" class="w-full px-3.5 py-2 text-sm border border-slate-300 rounded-lg">
+                        </div>
+                    </div>
+
+                    <!-- Section 3: Signature & Reporter Name -->
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-4">
+                        <h3 class="text-sm font-semibold text-korat-blue flex items-center gap-2 border-b border-slate-200 pb-2">
+                            <i class="fa-solid fa-pen-fancy"></i> ส่วนที่ 3: ลงนามรายงาน (หัวหน้าชุดเวรเตรียมพร้อม)
+                        </h3>
+                        <div class="flex flex-col sm:flex-row gap-4 items-start">
+                            <div class="w-full sm:w-80">
+                                <canvas id="leader-sig-canvas" width="320" height="130" class="sig-canvas w-full"></canvas>
+                                <div class="flex justify-between mt-1.5">
+                                    <button type="button" onclick="clearSignature('leader')" class="text-xs text-rose-600 hover:underline flex items-center gap-1">
+                                        <i class="fa-solid fa-eraser"></i> ล้างลายเซ็นต์
+                                    </button>
+                                    <span class="text-xs text-slate-400">เซ็นชื่อหัวหน้าชุดเวร</span>
+                                </div>
+                            </div>
+                            <div class="flex-grow space-y-3 w-full">
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-700 mb-1">ชื่อ-นามสกุล หัวหน้าชุดเวรผู้รายงาน <span class="text-red-500">*</span></label>
+                                    <input type="text" id="leader_name_signed" value="นายสุรนาท วัฒนากลาง" required class="w-full px-3.5 py-2 text-sm border border-slate-300 rounded-lg">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-700 mb-1">ตำแหน่งในรายงาน <span class="text-red-500">*</span></label>
+                                    <input type="text" id="leader_position_title" value="หัวหน้าชุดเวรเตรียมพร้อมชุดที่ ๑" required class="w-full px-3.5 py-2 text-sm border border-slate-300 rounded-lg">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div class="flex justify-end pt-4 border-t border-slate-200">
+                        <button type="submit" class="bg-gradient-to-r from-korat-blue to-blue-900 text-white font-medium px-6 py-2.5 rounded-xl shadow-md hover:opacity-90 transition flex items-center gap-2">
+                            <i class="fa-solid fa-file-export"></i> บันทึกรายงานการออกปฏิบัติงานประจำวัน
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        <!-- TAB 3: History & Print Reports -->
+        <section id="tab-history" class="tab-content hidden">
+            <!-- Header actions -->
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+                <div>
+                    <h2 class="text-xl font-bold text-slate-800">รายการบันทึกรายงานประจำวัน</h2>
+                    <p class="text-xs text-slate-500">รวมเอกสารรายงานออกปฏิบัติงานและรายงานการใช้รถยนต์เพื่อพิมพ์/ออก PDF</p>
+                </div>
+                <div class="flex flex-wrap gap-2">
+                    <button onclick="loadMockData()" class="px-3.5 py-2 bg-slate-200 text-slate-700 rounded-lg text-xs font-medium hover:bg-slate-300 transition flex items-center gap-1.5">
+                        <i class="fa-solid fa-database"></i> โหลดข้อมูลตัวอย่าง
+                    </button>
+                    <button onclick="previewCombinedDocument()" class="px-4 py-2 bg-emerald-600 text-white rounded-lg text-xs font-medium hover:bg-emerald-700 shadow-md transition flex items-center gap-1.5">
+                        <i class="fa-solid fa-print"></i> พิมพ์ / ดาวน์โหลด PDF รวมแบบฟอร์ม
+                    </button>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Leader Reports Card -->
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
+                            <i class="fa-solid fa-file-lines text-korat-blue"></i> รายงานการออกปฏิบัติงาน (หัวหน้าชุด)
+                        </h3>
+                        <span id="leader-count-badge" class="bg-blue-100 text-blue-800 text-xs px-2.5 py-0.5 rounded-full font-semibold">0 รายการ</span>
+                    </div>
+                    <div id="leader-reports-list" class="space-y-3 max-h-96 overflow-y-auto pr-1">
+                        <!-- Rendered via JS -->
+                    </div>
+                </div>
+
+                <!-- Driver Reports Card -->
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
+                            <i class="fa-solid fa-car text-korat-orange"></i> รายงานการใช้รถยนต์ (พนักงานขับรถ)
+                        </h3>
+                        <span id="driver-count-badge" class="bg-orange-100 text-orange-800 text-xs px-2.5 py-0.5 rounded-full font-semibold">0 รายการ</span>
+                    </div>
+                    <div id="driver-reports-list" class="space-y-3 max-h-96 overflow-y-auto pr-1">
+                        <!-- Rendered via JS -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- PDF Document Live Preview Area -->
+            <div class="mt-8 bg-slate-200 p-4 sm:p-8 rounded-2xl border border-slate-300 shadow-inner">
+                <div class="flex justify-between items-center mb-4 bg-white p-4 rounded-xl shadow-sm no-print">
+                    <div>
+                        <h3 class="font-bold text-slate-800">ตัวอย่างเอกสารชุดรายงานสมบูรณ์ (Official Document Layout)</h3>
+                        <p class="text-xs text-slate-500">จัดเรียง: 1. รายงานการออกปฏิบัติงาน (หัวหน้าชุด) ➔ 2. รายงานการใช้รถยนต์ออกปฏิบัติงาน (พนักงานขับรถ)</p>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="downloadPDF()" class="px-4 py-2 bg-korat-orange text-white rounded-lg text-xs font-semibold hover:bg-orange-600 shadow transition flex items-center gap-1.5">
+                            <i class="fa-solid fa-file-pdf"></i> บันทึกเป็น PDF
+                        </button>
+                        <button onclick="window.print()" class="px-4 py-2 bg-slate-800 text-white rounded-lg text-xs font-semibold hover:bg-slate-900 shadow transition flex items-center gap-1.5">
+                            <i class="fa-solid fa-print"></i> สั่งพิมพ์เอกสาร
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Print Container -->
+                <div id="pdf-container" class="space-y-8">
+                    <!-- Page 1 & Page 2 dynamic rendering -->
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Modal for Vehicle Selection into Leader Report -->
+    <div id="vehicleModal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-2xl border border-slate-200 max-h-[90vh] flex flex-col">
+            <div class="flex justify-between items-center pb-3 border-b border-slate-200">
+                <h3 class="font-bold text-slate-800 text-base">เลือกรายงานการใช้รถยนต์มาใส่ในรายงาน</h3>
+                <button onclick="closeVehicleModal()" class="text-slate-400 hover:text-slate-600">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+            </div>
+            <div id="modal-vehicle-list" class="py-4 space-y-2 overflow-y-auto flex-grow">
+                <!-- Vehicle list -->
+            </div>
+            <div class="pt-3 border-t border-slate-200 flex justify-end">
+                <button onclick="closeVehicleModal()" class="px-4 py-2 bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold">ปิดหน้าต่าง</button>
+            </div>
         </div>
+    </div>
 
-        <!-- ส่วนลงลายเซ็นหัวหน้าชุดเวร (ผู้รายงาน) -->
-        <div class="bg-amber-50/50 p-4 rounded-lg border border-amber-200 space-y-3">
-          <h3 class="font-semibold text-amber-900 text-sm border-b border-amber-200 pb-2">ลายเซ็นหัวหน้าชุดเวร (ผู้รายงาน)</h3>
-          <div class="flex flex-col sm:flex-row items-center gap-4">
-            <canvas id="reporterSigCanvas" width="320" height="110" class="border border-gray-400 bg-white rounded cursor-crosshair shadow-sm"></canvas>
-            <div class="space-y-2">
-              <button type="button" onclick="clearCanvas('reporterSigCanvas')" class="px-3 py-1.5 bg-gray-200 hover:bg-gray-300 text-xs rounded block w-full">
-                <i class="fa-solid fa-eraser mr-1"></i> ล้างลายเซ็นผู้รายงาน
-              </button>
-              <p class="text-xs text-gray-500">เซ็นต์ชื่อในช่องสี่เหลี่ยม เพื่อนำไปแสดงในส่วนลงชื่อท้ายรายงาน</p>
-            </div>
-          </div>
+    <!-- Application Footer -->
+    <footer class="bg-slate-900 text-slate-400 py-4 text-center text-xs border-t border-slate-800 no-print mt-auto">
+        <div class="max-w-7xl mx-auto px-4">
+            <p>งานป้องกันและบรรเทาสาธารณภัย / ฝ่ายปกครอง สำนักปลัดเทศบาล เทศบาลนครนครราชสีมา</p>
+            <p class="mt-1 text-slate-500">E-Operation Report System © 2026 Nakhon Ratchasima City Municipality. All rights reserved.</p>
         </div>
+    </footer>
 
-      </form>
-    </section>
+    <!-- Application Core Script -->
+    <script>
+        // State Management
+        let driverReports = [];
+        let leaderReports = [];
+        let selectedLeaderReportId = null;
 
-    <!-- PREVIEW & EXPORT SECTION -->
-    <section id="preview-section" class="space-y-4">
-      
-      <div class="flex flex-col sm:flex-row justify-between items-center bg-gray-800 text-white p-4 rounded-xl shadow no-print gap-3">
-        <div>
-          <h2 class="font-bold text-base flex items-center gap-2">
-            <i class="fa-solid fa-eye text-amber-400"></i> ตัวอย่างเอกสารรายงาน (A4 Document Preview)
-          </h2>
-          <p class="text-xs text-gray-300">ตรวจสอบความถูกต้องก่อนพิมพ์หรือดาวน์โหลด PDF</p>
-        </div>
-        <div class="flex flex-wrap gap-2">
-          <button onclick="downloadPDF()" class="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold text-xs rounded-lg shadow flex items-center gap-1.5 transition">
-            <i class="fa-solid fa-file-pdf text-sm"></i> ดาวน์โหลดเอกสาร PDF ทั้งหมด
-          </button>
-          <button onclick="window.print()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs rounded-lg shadow flex items-center gap-1.5 transition">
-            <i class="fa-solid fa-print text-sm"></i> พิมพ์เอกสาร (Print)
-          </button>
-        </div>
-      </div>
+        // Signature Pads
+        let driverSigPad = null;
+        let leaderSigPad = null;
 
-      <!-- CONTAINER สำหรับเรนเดอร์ PDF -->
-      <div id="pdfExportContainer" class="overflow-x-auto p-2 bg-gray-200 rounded-xl">
-        
-        <!-- PAGE 1: บันทึกข้อความ (รายงานการออกปฏิบัติงาน) -->
-        <div id="docPage1" class="document-page shadow-2xl">
-          
-          <!-- หัวเอกสาร: ตราครุฑซ้ายมือ + บันทึกข้อความกลาง -->
-          <div class="relative flex items-end mb-4 border-b pb-2">
-            <div class="w-1/4">
-              <!-- รูปครุฑลายเส้นมาตรฐานราชการไทย -->
-              <img id="garudaImg" class="garuda-img" alt="ครุฑ" />
-            </div>
-            <div class="w-2/4 text-center">
-              <h1 class="text-3xl font-bold tracking-tight" style="font-size: 28pt; line-height: 1;">บันทึกข้อความ</h1>
-            </div>
-            <div class="w-1/4"></div>
-          </div>
+        // Initialize on DOM Ready
+        window.addEventListener('DOMContentLoaded', () => {
+            initSignaturePads();
+            initLeaderFormItems();
+            loadStoredData();
+            
+            // Set default date inputs to today
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('driver_date').value = today;
+            document.getElementById('doc_date').value = today;
 
-          <!-- ส่วนราชการ -->
-          <div class="space-y-1 mb-3 text-base">
-            <div class="flex">
-              <span class="font-bold w-24">ส่วนราชการ</span>
-              <span class="flex-1 border-b border-dotted border-gray-400" id="pvDepartment">งานสถานีดับเพลิงจอมสุรางค์ยาตร์ ฝ่ายปกครอง สำนักปลัดเทศบาล</span>
-            </div>
-            <div class="flex">
-              <div class="w-1/2 flex">
-                <span class="font-bold w-8">ที่</span>
-                <span class="flex-1 border-b border-dotted border-gray-400" id="pvDocNo">....../2569</span>
-              </div>
-              <div class="w-1/2 flex pl-4">
-                <span class="font-bold w-12">วันที่</span>
-                <span class="flex-1 border-b border-dotted border-gray-400" id="pvDocDate">-</span>
-              </div>
-            </div>
-            <div class="flex">
-              <span class="font-bold w-16">เรื่อง</span>
-              <span class="flex-1 border-b border-dotted border-gray-400 font-semibold">รายงานการออกปฏิบัติงาน</span>
-            </div>
-          </div>
-
-          <!-- เรียน -->
-          <div class="mb-3">
-            <p><span class="font-bold">เรียน</span> นายกเทศมนตรีนครนครราชสีมา</p>
-            <p class="pl-10 text-sm text-gray-800">ผ่าน ปลัดเทศบาล หัวหน้าสำนักปลัดเทศบาล หัวหน้าฝ่ายปกครอง และ หัวหน้างาน<span id="pvSubDept">สถานีดับเพลิงจอมสุรางค์ยาตร์</span></p>
-          </div>
-
-          <!-- ข้อความนำ -->
-          <div class="mb-3 text-justify leading-relaxed">
-            <p class="indent-10">
-              ด้วยข้าพเจ้า <span id="pvReporterNameText" class="font-semibold">นายสุรนาท วัฒนากลาง</span> 
-              หัวหน้าชุดเวรเตรียมพร้อมชุดที่ <span id="pvShiftTeamText" class="font-semibold">1</span> 
-              <span id="pvStationText">สถานีดับเพลิงจอมสุรางค์ยาตร์</span> ฝ่ายปกครอง สำนักปลัดเทศบาล 
-              ขอรายงานผลการปฏิบัติงานของชุดเวรเตรียมพร้อม ดังนี้
-            </p>
-          </div>
-
-          <!-- รายการรถที่ออกปฏิบัติงาน (แสดงในบันทึกข้อความ) -->
-          <div id="pvCarLogsContainer" class="space-y-2 mb-4">
-            <!-- JS Dynamic Rendering -->
-          </div>
-
-          <!-- ผลการปฏิบัติงาน สรุปรวม -->
-          <div class="space-y-1.5 mb-6 text-justify">
-            <div class="flex">
-              <span class="font-bold whitespace-nowrap">ผลการออกปฏิบัติงาน</span>
-              <span class="flex-1 border-b border-dotted border-gray-400 pl-2" id="pvSummaryResult">ปฏิบัติงานสำเร็จลุล่วงด้วยความเรียบร้อยดีทุกภารกิจ</span>
-            </div>
-            <div class="flex">
-              <span class="font-bold whitespace-nowrap">อุปกรณ์ที่นำไปปฏิบัติงานใช้การได้ดีหรือไม่</span>
-              <span class="flex-1 border-b border-dotted border-gray-400 pl-2" id="pvSummaryEquip">อุปกรณ์และเครื่องมือทุกรายการใช้การได้ดีเยี่ยม</span>
-            </div>
-            <div class="flex">
-              <span class="font-bold whitespace-nowrap">ขณะปฏิบัติงานมีปัญหาหรืออุปสรรคหรือไม่</span>
-              <span class="flex-1 border-b border-dotted border-gray-400 pl-2" id="pvSummaryObstacle">ไม่มี</span>
-            </div>
-          </div>
-
-          <!-- จึงเรียนมาเพื่อโปรดทราบ & ลงชื่อ -->
-          <div class="mt-8">
-            <p class="indent-10">จึงเรียนมาเพื่อโปรดทราบ</p>
-
-            <div class="mt-4 float-right w-72 text-center space-y-1">
-              <div class="h-16 flex items-end justify-center relative">
-                <img id="pvReporterSigImg" class="max-h-14 max-w-full object-contain hidden" alt="ลายเซ็นผู้รายงาน" />
-                <span id="pvReporterSigLine" class="text-xs text-gray-400 pb-1">ลงชื่อ.....................................ผู้รายงาน</span>
-              </div>
-              <p class="font-semibold">( <span id="pvReporterNameSign">นายสุรนาท วัฒนากลาง</span> )</p>
-              <p class="text-sm"><span id="pvReporterPosSign">หัวหน้าชุดเวรเตรียมพร้อม</span> ชุดที่ <span id="pvShiftTeamSign">1</span></p>
-            </div>
-            <div class="clear-both"></div>
-          </div>
-
-        </div>
-
-        <!-- PAGE 2+: รายงานการใช้รถยนต์ออกปฏิบัติงาน (แยกใบตามรายการรถ) -->
-        <div id="carPagesContainer">
-          <!-- JS จะสร้างหน้ารายงานรถยนต์แต่ละคันให้อัตโนมัติ -->
-        </div>
-
-      </div>
-    </section>
-
-  </main>
-
-  <!-- Script Logic -->
-  <script>
-    // 1. Data Store
-    let carEntries = [
-      {
-        id: Date.now(),
-        driverName: 'นายสมชาย ใจดี',
-        driverPos: 'พนักงานขับรถ',
-        carType: 'รถบรรทุกน้ำดับเพลิง',
-        carPlate: 'กข-1234 นครราชสีมา',
-        dateStr: '25 ตุลาคม 2569',
-        mission: 'ออกตรวจจุดเสี่ยงและเตรียมความพร้อมป้องกันเหตุเพลิงไหม้',
-        startTime: '08.30',
-        endTime: '16.30',
-        crew: ['นายสมศักดิ์ มีสุข', 'นายวิชัย รักดี', 'นายปรีชา ขยันงาน'],
-        absent: [{ name: 'นายคนึง ดีใจ', reason: 'ลาป่วย' }],
-        result: 'ปฏิบัติงานเสร็จสิ้นด้วยความเรียบร้อย',
-        obstacle: 'ไม่มี',
-        driverSig: null
-      }
-    ];
-
-    // 2. T-Garuda SVG Base64 Canvas Renderer
-    function generateGarudaBase64() {
-      const canvas = document.createElement('canvas');
-      canvas.width = 300;
-      canvas.height = 300;
-      const ctx = canvas.getContext('2d');
-
-      const svgString = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300" width="300" height="300">
-        <g fill="none" stroke="#000" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-          <!-- Garuda Wings -->
-          <path d="M150,110 Q90,40 20,80 Q60,130 110,140 Q60,170 30,220 Q100,200 140,170 Z" fill="#fff" />
-          <path d="M150,110 Q210,40 280,80 Q240,130 190,140 Q240,170 270,220 Q200,200 160,170 Z" fill="#fff" />
-          <!-- Head & Crown -->
-          <path d="M150,40 L160,70 L175,55 L165,85 L180,80 L165,95 L150,105 L135,95 L120,80 L135,85 L125,55 L140,70 Z" fill="#fff" />
-          <!-- Face -->
-          <circle cx="140" cy="85" r="4" fill="#000" />
-          <circle cx="160" cy="85" r="4" fill="#000" />
-          <path d="M140,95 Q150,110 160,95 Z" fill="#000" />
-          <!-- Body & Legs -->
-          <path d="M130,120 Q150,140 170,120 Q180,180 150,230 Q120,180 130,120 Z" fill="#fff" />
-          <!-- Tail Feathers -->
-          <path d="M150,230 L130,280 L150,270 L170,280 Z" fill="#fff" />
-          <!-- Details -->
-          <path d="M110,140 Q150,160 190,140" />
-          <path d="M120,170 Q150,190 180,170" />
-        </g>
-      </svg>`;
-
-      const img = new Image();
-      const svgBlob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
-      const url = URL.createObjectURL(svgBlob);
-
-      img.onload = function () {
-        ctx.drawImage(img, 0, 0);
-        URL.revokeObjectURL(url);
-        document.getElementById('garudaImg').src = canvas.toDataURL('image/png');
-      };
-      img.src = url;
-    }
-
-    // 3. Signature Canvas Pad Handler
-    function initSignatureCanvas(canvasId) {
-      const canvas = document.getElementById(canvasId);
-      if (!canvas) return;
-      const ctx = canvas.getContext('2d');
-      let isDrawing = false;
-
-      ctx.strokeStyle = '#000080';
-      ctx.lineWidth = 2;
-      ctx.lineCap = 'round';
-
-      function getPos(e) {
-        const rect = canvas.getBoundingClientRect();
-        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-        return {
-          x: clientX - rect.left,
-          y: clientY - rect.top
-        };
-      }
-
-      function startDraw(e) {
-        isDrawing = true;
-        const pos = getPos(e);
-        ctx.beginPath();
-        ctx.moveTo(pos.x, pos.y);
-        e.preventDefault();
-      }
-
-      function draw(e) {
-        if (!isDrawing) return;
-        const pos = getPos(e);
-        ctx.lineTo(pos.x, pos.y);
-        ctx.stroke();
-        e.preventDefault();
-      }
-
-      function stopDraw() {
-        if (isDrawing) {
-          isDrawing = false;
-          updatePreview();
-        }
-      }
-
-      canvas.addEventListener('mousedown', startDraw);
-      canvas.addEventListener('mousemove', draw);
-      canvas.addEventListener('mouseup', stopDraw);
-      canvas.addEventListener('mouseleave', stopDraw);
-
-      canvas.addEventListener('touchstart', startDraw, { passive: false });
-      canvas.addEventListener('touchmove', draw, { passive: false });
-      canvas.addEventListener('touchend', stopDraw);
-    }
-
-    function clearCanvas(canvasId) {
-      const canvas = document.getElementById(canvasId);
-      if (!canvas) return;
-      const ctx = canvas.getContext('2d');
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      updatePreview();
-    }
-
-    function getCanvasData(canvasId) {
-      const canvas = document.getElementById(canvasId);
-      if (!canvas) return null;
-      // ตรวจสอบว่ามีภาพวาดหรือไม่
-      const ctx = canvas.getContext('2d');
-      const pixelBuffer = new Uint32Array(
-        ctx.getImageData(0, 0, canvas.width, canvas.height).data.buffer
-      );
-      const hasContent = pixelBuffer.some(color => color !== 0);
-      return hasContent ? canvas.toDataURL('image/png') : null;
-    }
-
-    // Dynamic Form Handlers
-    function addCrewInput() {
-      const container = document.getElementById('crewListContainer');
-      const count = container.querySelectorAll('.crew-input').length;
-      if (count >= 6) {
-        alert('ผู้ร่วมปฏิบัติงานสูงสุด 6 คน');
-        return;
-      }
-      const input = document.createElement('input');
-      input.type = 'text';
-      input.className = 'crew-input w-full p-1.5 border border-gray-300 rounded text-xs';
-      input.placeholder = `${count + 1}. นาย...`;
-      container.appendChild(input);
-    }
-
-    function addAbsentInput() {
-      const container = document.getElementById('absentListContainer');
-      const div = document.createElement('div');
-      div.className = 'flex gap-1';
-      div.innerHTML = `
-        <input type="text" class="absent-name w-1/2 p-1.5 border rounded text-xs" placeholder="ชื่อ-นามสกุล" />
-        <input type="text" class="absent-reason w-1/2 p-1.5 border rounded text-xs" placeholder="สาเหตุ" />
-      `;
-      container.appendChild(div);
-    }
-
-    function addCarEntry() {
-      const driverName = document.getElementById('driverName').value.trim();
-      const carType = document.getElementById('carType').value.trim();
-      const carPlate = document.getElementById('carPlate').value.trim();
-
-      if (!driverName || !carType || !carPlate) {
-        alert('กรุณากรอกชื่อพนักงานขับรถ ชนิดรถ และหมายเลขทะเบียนให้ครบถ้วน');
-        return;
-      }
-
-      // รวบรวมรายชื่อผู้ร่วมงาน
-      const crewInputs = document.querySelectorAll('.crew-input');
-      const crew = [];
-      crewInputs.forEach(inp => {
-        if (inp.value.trim()) crew.push(inp.value.trim());
-      });
-
-      // รวบรวมรายชื่อผู้ลา
-      const absentDivs = document.querySelectorAll('#absentListContainer > div');
-      const absent = [];
-      absentDivs.forEach(div => {
-        const name = div.querySelector('.absent-name').value.trim();
-        const reason = div.querySelector('.absent-reason').value.trim();
-        if (name) absent.push({ name, reason: reason || 'ติดภารกิจ' });
-      });
-
-      const entry = {
-        id: Date.now(),
-        driverName: driverName,
-        driverPos: document.getElementById('driverPos').value || 'พนักงานขับรถ',
-        carType: carType,
-        carPlate: carPlate,
-        mission: document.getElementById('mission').value || 'ออกปฏิบัติงาน',
-        startTime: document.getElementById('startTime').value || '08.00',
-        endTime: document.getElementById('endTime').value || '16.00',
-        crew: crew,
-        absent: absent,
-        result: document.getElementById('carResult').value || 'ปฏิบัติงานเรียบร้อย',
-        obstacle: document.getElementById('carObstacle').value || 'ไม่มี',
-        driverSig: getCanvasData('driverSigCanvas')
-      };
-
-      carEntries.push(entry);
-      renderCarTable();
-      clearCarForm();
-      updatePreview();
-    }
-
-    function deleteCarEntry(id) {
-      carEntries = carEntries.filter(item => item.id !== id);
-      renderCarTable();
-      updatePreview();
-    }
-
-    function clearCarForm() {
-      document.getElementById('driverName').value = '';
-      document.getElementById('carType').value = '';
-      document.getElementById('carPlate').value = '';
-      document.getElementById('mission').value = '';
-      clearCanvas('driverSigCanvas');
-    }
-
-    function renderCarTable() {
-      const tbody = document.getElementById('carEntriesTable');
-      tbody.innerHTML = '';
-      carEntries.forEach((entry, idx) => {
-        const tr = document.createElement('tr');
-        tr.className = 'border-b hover:bg-gray-50';
-        tr.innerHTML = `
-          <td class="p-2 font-semibold">${idx + 1}</td>
-          <td class="p-2">${entry.driverName}</td>
-          <td class="p-2">${entry.carType} (${entry.carPlate})</td>
-          <td class="p-2">${entry.mission}</td>
-          <td class="p-2">${entry.startTime} - ${entry.endTime} น.</td>
-          <td class="p-2 text-center">
-            <button type="button" onclick="deleteCarEntry(${entry.id})" class="text-red-600 hover:text-red-800 font-bold text-xs">
-              <i class="fa-solid fa-trash"></i> ลบ
-            </button>
-          </td>
-        `;
-        tbody.appendChild(tr);
-      });
-    }
-
-    // Format Thai Date
-    function formatThaiDate(dateStr) {
-      if (!dateStr) return '...................................................';
-      const d = new Date(dateStr);
-      if (isNaN(d.getTime())) return dateStr;
-      const months = ['มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน', 'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'];
-      return `${d.getDate()} เดือน ${months[d.getMonth()]} พ.ศ. ${d.getFullYear() + 543}`;
-    }
-
-    // UPDATE PREVIEW DOCUMENT
-    function updatePreview() {
-      const station = document.getElementById('station').value;
-      const shiftTeam = document.getElementById('shiftTeam').value;
-      const reportDate = document.getElementById('reportDate').value;
-      const reporterName = document.getElementById('reporterName').value;
-      const reporterPos = document.getElementById('reporterPos').value;
-
-      // อัปเดตส่วนราชการ (นำสถานีดับเพลิงใส่ต่อท้าย "งาน...")
-      document.getElementById('pvDepartment').textContent = `งาน${station} ฝ่ายปกครอง สำนักปลัดเทศบาล`;
-      document.getElementById('pvSubDept').textContent = station;
-      document.getElementById('pvStationText').textContent = station;
-      document.getElementById('pvShiftTeamText').textContent = shiftTeam;
-      document.getElementById('pvReporterNameText').textContent = reporterName;
-      document.getElementById('pvDocDate').textContent = formatThaiDate(reportDate);
-
-      document.getElementById('pvReporterNameSign').textContent = reporterName || '.....................................';
-      document.getElementById('pvReporterPosSign').textContent = reporterPos || 'หัวหน้าชุดเวรเตรียมพร้อม';
-      document.getElementById('pvShiftTeamSign').textContent = shiftTeam;
-
-      // ลายเซ็นผู้รายงาน
-      const reporterSigData = getCanvasData('reporterSigCanvas');
-      const sigImg = document.getElementById('pvReporterSigImg');
-      const sigLine = document.getElementById('pvReporterSigLine');
-      if (reporterSigData) {
-        sigImg.src = reporterSigData;
-        sigImg.classList.remove('hidden');
-        sigLine.classList.add('hidden');
-      } else {
-        sigImg.classList.add('hidden');
-        sigLine.classList.remove('hidden');
-      }
-
-      // Dynamic Render: รายการรถในบันทึกข้อความ (หน้า 1)
-      const logsContainer = document.getElementById('pvCarLogsContainer');
-      logsContainer.innerHTML = '';
-
-      if (carEntries.length === 0) {
-        logsContainer.innerHTML = `<p class="text-gray-400 italic text-sm text-center py-2">- ยังไม่มีรายการออกปฏิบัติงาน -</p>`;
-      } else {
-        carEntries.forEach(item => {
-          const div = document.createElement('div');
-          div.className = 'text-base space-y-0.5';
-          div.innerHTML = `
-            <div class="flex">
-              <span class="font-bold w-12">วันที่</span>
-              <span class="w-48 border-b border-dotted border-gray-400">${formatThaiDate(reportDate)}</span>
-              <span class="font-bold w-12 text-right pr-1">เวลา</span>
-              <span class="w-20 border-b border-dotted border-gray-400 text-center">${item.startTime} น.</span>
-              <span class="w-16 text-center">ถึงเวลา</span>
-              <span class="w-20 border-b border-dotted border-gray-400 text-center">${item.endTime} น.</span>
-            </div>
-            <div class="flex">
-              <span class="font-bold w-8">รถ</span>
-              <span class="w-40 border-b border-dotted border-gray-400">${item.carType} (${item.carPlate})</span>
-              <span class="font-bold w-24 text-right pr-2">ออกปฏิบัติงาน</span>
-              <span class="flex-1 border-b border-dotted border-gray-400">${item.mission}</span>
-            </div>
-          `;
-          logsContainer.appendChild(div);
+            // Render history & initial document preview
+            renderHistoryLists();
+            previewCombinedDocument();
         });
-      }
 
-      // Dynamic Render: ใบรายงานการใช้รถยนต์ (หน้า 2 เป็นต้นไป)
-      const carPagesContainer = document.getElementById('carPagesContainer');
-      carPagesContainer.innerHTML = '';
+        // Initialize Signature Pads
+        function initSignaturePads() {
+            const canvas1 = document.getElementById('driver-sig-canvas');
+            const canvas2 = document.getElementById('leader-sig-canvas');
 
-      carEntries.forEach((car, index) => {
-        const pageDiv = document.createElement('div');
-        pageDiv.className = 'document-page shadow-2xl mt-6';
-
-        // เติมรายชื่อผู้ร่วมงาน 1-6
-        let crewHTML = '';
-        for (let i = 0; i < 6; i += 2) {
-          const c1 = car.crew[i] ? `${i + 1}. ${car.crew[i]}` : `${i + 1}. ...........................................................`;
-          const c2 = car.crew[i + 1] ? `${i + 2}. ${car.crew[i + 1]}` : `${i + 2}. ...........................................................`;
-          crewHTML += `
-            <div class="flex text-sm py-0.5">
-              <div class="w-1/2 pr-2">${c1}</div>
-              <div class="w-1/2 pl-2">${c2}</div>
-            </div>
-          `;
+            if(canvas1) {
+                driverSigPad = new SignaturePad(canvas1, { backgroundColor: 'rgb(250, 250, 250)' });
+            }
+            if(canvas2) {
+                leaderSigPad = new SignaturePad(canvas2, { backgroundColor: 'rgb(250, 250, 250)' });
+            }
         }
 
-        // เติมรายชื่อผู้ลา 1-2
-        const abs1 = car.absent[0] ? `1. ${car.absent[0].name} สาเหตุ: ${car.absent[0].reason}` : `1. .................................................... สาเหตุเนื่องจาก ....................................................`;
-        const abs2 = car.absent[1] ? `2. ${car.absent[1].name} สาเหตุ: ${car.absent[1].reason}` : `2. .................................................... สาเหตุเนื่องจาก ....................................................`;
+        function clearSignature(type) {
+            if(type === 'driver' && driverSigPad) driverSigPad.clear();
+            if(type === 'leader' && leaderSigPad) leaderSigPad.clear();
+        }
 
-        pageDiv.innerHTML = `
-          <div class="text-center font-bold text-lg mb-1" style="font-size: 18pt;">รายงานการใช้รถยนต์ออกปฏิบัติงาน</div>
-          <div class="text-center text-base mb-4">ฝ่ายปกครอง สำนักปลัดเทศบาล เทศบาลนครนครราชสีมา</div>
-          <div class="border-b border-black mb-4"></div>
+        // Generate 7 rows for Leader Report items
+        function initLeaderFormItems() {
+            const container = document.getElementById('leader-op-items');
+            container.innerHTML = '';
+            for(let i=1; i<=7; i++) {
+                const row = document.createElement('div');
+                row.className = "bg-white p-3 rounded-lg border border-blue-100 text-xs grid grid-cols-1 md:grid-cols-12 gap-2 items-center";
+                row.innerHTML = `
+                    <div class="font-bold text-slate-700 md:col-span-1 flex items-center">ข้อ ${i}.</div>
+                    <div class="md:col-span-3">
+                        <input type="text" id="op_date_${i}" placeholder="วันที่/เดือน/พ.ศ." class="w-full px-2.5 py-1.5 border border-slate-300 rounded focus:ring-1 focus:ring-blue-500">
+                    </div>
+                    <div class="md:col-span-2">
+                        <input type="text" id="op_time_${i}" placeholder="เวลา...น.-...น." class="w-full px-2.5 py-1.5 border border-slate-300 rounded focus:ring-1 focus:ring-blue-500">
+                    </div>
+                    <div class="md:col-span-3">
+                        <input type="text" id="op_action_${i}" placeholder="ออกปฏิบัติงาน..." class="w-full px-2.5 py-1.5 border border-slate-300 rounded focus:ring-1 focus:ring-blue-500">
+                    </div>
+                    <div class="md:col-span-3">
+                        <input type="text" id="op_car_${i}" placeholder="รถทะเบียน..." class="w-full px-2.5 py-1.5 border border-slate-300 rounded focus:ring-1 focus:ring-blue-500">
+                    </div>
+                `;
+                container.appendChild(row);
+            }
+        }
 
-          <div class="space-y-2 text-base">
-            <p class="indent-10">
-              ข้าพเจ้า <span class="font-semibold">${car.driverName}</span> ตำแหน่ง <span class="font-semibold">${car.driverPos}</span> 
-              ทำหน้าที่ขับรถยนต์ <span class="font-semibold">${car.carType}</span> หมายเลขทะเบียน <span class="font-semibold">${car.carPlate}</span> 
-              ในวันที่ <span class="font-semibold">${formatThaiDate(reportDate)}</span> ได้นำรถออกปฏิบัติงาน <span class="font-semibold">${car.mission}</span>
-            </p>
+        // Tab Switcher
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById(tabId).classList.remove('hidden');
 
-            <p class="indent-10">
-              ออกปฏิบัติงานตั้งแต่เวลา <span class="font-semibold">${car.startTime} น.</span> ถึงเวลา <span class="font-semibold">${car.endTime} น.</span> มีร่วมผู้ปฏิบัติงานดังนี้
-            </p>
+            const btns = {
+                'tab-driver': 'nav-btn-driver',
+                'tab-leader': 'nav-btn-leader',
+                'tab-history': 'nav-btn-history'
+            };
 
-            <div class="pl-4 my-2">
-              ${crewHTML}
-            </div>
+            Object.keys(btns).forEach(key => {
+                const btn = document.getElementById(btns[key]);
+                if(key === tabId) {
+                    btn.className = "px-3.5 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2 bg-white/20 text-white shadow";
+                } else {
+                    btn.className = "px-3.5 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2 bg-transparent hover:bg-white/10 text-slate-200";
+                }
+            });
 
-            <p class="indent-10">พนักงานประจำรถไม่ออกร่วมปฏิบัติงาน มีดังนี้</p>
-            <div class="pl-6 text-sm space-y-1">
-              <p>${abs1}</p>
-              <p>${abs2}</p>
-            </div>
+            if(tabId === 'tab-history') {
+                previewCombinedDocument();
+            }
+        }
 
-            <div class="mt-3">
-              <p class="font-bold">ผลการปฏิบัติงาน</p>
-              <p class="pl-6 border-b border-dotted border-gray-400 min-h-[1.8rem]">${car.result}</p>
-            </div>
+        // Save Driver Report
+        function saveDriverReport(e) {
+            e.preventDefault();
+            
+            // Gather staff list
+            const staffInputs = document.querySelectorAll('.attending-staff');
+            const attendingStaff = Array.from(staffInputs).map(input => input.value.trim()).filter(val => val !== '');
 
-            <div class="mt-2">
-              <p class="font-bold">อุปสรรคและปัญหา</p>
-              <p class="pl-6 border-b border-dotted border-gray-400 min-h-[1.8rem]">${car.obstacle}</p>
-            </div>
-          </div>
+            // Absence list
+            const absentStaff = [];
+            const abs1 = document.getElementById('absent_name_1').value.trim();
+            if(abs1) absentStaff.push({ name: abs1, reason: document.getElementById('absent_reason_1').value.trim() });
+            const abs2 = document.getElementById('absent_name_2').value.trim();
+            if(abs2) absentStaff.push({ name: abs2, reason: document.getElementById('absent_reason_2').value.trim() });
 
-          <!-- ลายเซ็นส่วนท้ายใบใช้รถ -->
-          <div class="mt-8 grid grid-cols-2 gap-4 text-center text-sm">
-            <!-- ฝั่งพนักงานขับรถ -->
-            <div class="space-y-1">
-              <div class="h-14 flex items-end justify-center">
-                ${car.driverSig ? `<img src="${car.driverSig}" class="max-h-12 object-contain" />` : `<span class="text-gray-400">ลงชื่อ.......................................................</span>`}
-              </div>
-              <p class="font-semibold">( ${car.driverName} )</p>
-              <p>ตำแหน่ง ${car.driverPos}</p>
-            </div>
+            // Signature Data
+            let sigData = null;
+            if (driverSigPad && !driverSigPad.isEmpty()) {
+                sigData = driverSigPad.toDataURL();
+            }
 
-            <!-- ฝั่งเรียนหัวหน้าสถานี -->
-            <div class="space-y-1 text-left pl-6">
-              <p>เรียน หัวหน้า${station}</p>
-              <p class="pl-4">เพื่อโปรดทราบ</p>
-              <div class="h-10 flex items-end justify-center">
-                ${reporterSigData ? `<img src="${reporterSigData}" class="max-h-10 object-contain" />` : `<span class="text-gray-400">ลงชื่อ.......................................................</span>`}
-              </div>
-              <div class="text-center">
-                <p class="font-semibold">( ${reporterName} )</p>
-                <p>ตำแหน่ง ${reporterPos}</p>
-              </div>
-            </div>
-          </div>
-        `;
-        carPagesContainer.appendChild(pageDiv);
-      });
-    }
+            const report = {
+                id: 'DRV-' + Date.now(),
+                date: document.getElementById('driver_date').value,
+                driverName: document.getElementById('driver_name').value,
+                driverPosition: document.getElementById('driver_position').value,
+                vehicleType: document.getElementById('vehicle_type').value,
+                vehiclePlate: document.getElementById('vehicle_plate').value,
+                startTime: document.getElementById('start_time').value,
+                endTime: document.getElementById('end_time').value,
+                attendingStaff: attendingStaff,
+                absentStaff: absentStaff,
+                stationName: document.getElementById('station_name').value,
+                workResult: document.getElementById('driver_work_result').value,
+                problems: document.getElementById('driver_problems').value,
+                driverNameSigned: document.getElementById('driver_name_signed').value,
+                leaderReceiver: document.getElementById('leader_name_receiver').value,
+                signatureImg: sigData,
+                timestamp: new Date().toISOString()
+            };
 
-    // DOWNLOAD PDF EXPORT (A4 Fit)
-    function downloadPDF() {
-      const element = document.getElementById('pdfExportContainer');
-      const opt = {
-        margin: [0, 0, 0, 0],
-        filename: `รายงานการปฏิบัติงานประจำวัน_${new Date().toISOString().slice(0,10)}.pdf`,
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true, logging: false },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-      };
+            driverReports.unshift(report);
+            persistData();
+            showToast('บันทึกรายงานการใช้รถยนต์เรียบร้อย');
+            renderHistoryLists();
+            
+            // Auto fill option in Leader report tab
+            autoFillLeaderOpFromDriver(report);
+        }
 
-      html2pdf().set(opt).from(element).save();
-    }
+        // Save Leader Report
+        function saveLeaderReport(e) {
+            e.preventDefault();
 
-    function scrollToSection(id) {
-      document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
-    }
+            const opItems = [];
+            for(let i=1; i<=7; i++) {
+                const dateVal = document.getElementById(`op_date_${i}`).value.trim();
+                const actionVal = document.getElementById(`op_action_${i}`).value.trim();
+                if(dateVal || actionVal) {
+                    opItems.push({
+                        no: i,
+                        date: dateVal,
+                        time: document.getElementById(`op_time_${i}`).value.trim(),
+                        action: actionVal,
+                        car: document.getElementById(`op_car_${i}`).value.trim()
+                    });
+                }
+            }
 
-    // INITIALIZATION
-    window.addEventListener('DOMContentLoaded', () => {
-      // ตั้งค่าวันที่ปัจจุบัน
-      document.getElementById('reportDate').valueAsDate = new Date();
-      generateGarudaBase64();
-      initSignatureCanvas('reporterSigCanvas');
-      initSignatureCanvas('driverSigCanvas');
-      renderCarTable();
-      setTimeout(updatePreview, 300);
-    });
-  </script>
+            let sigData = null;
+            if (leaderSigPad && !leaderSigPad.isEmpty()) {
+                sigData = leaderSigPad.toDataURL();
+            }
+
+            const report = {
+                id: 'LDR-' + Date.now(),
+                department: document.getElementById('gov_department').value,
+                docNumber: document.getElementById('doc_number').value,
+                docDate: document.getElementById('doc_date').value,
+                shiftTeamNo: document.getElementById('shift_team_no').value,
+                opItems: opItems,
+                overallResult: document.getElementById('overall_result').value,
+                equipmentStatus: document.getElementById('equipment_status').value,
+                problems: document.getElementById('leader_problems').value,
+                leaderNameSigned: document.getElementById('leader_name_signed').value,
+                leaderPositionTitle: document.getElementById('leader_position_title').value,
+                signatureImg: sigData,
+                timestamp: new Date().toISOString()
+            };
+
+            leaderReports.unshift(report);
+            selectedLeaderReportId = report.id;
+            persistData();
+            showToast('บันทึกรายงานการออกปฏิบัติงานเรียบร้อย');
+            renderHistoryLists();
+            switchTab('tab-history');
+        }
+
+        // Auto fill a driver report into the first empty row of Leader tab
+        function autoFillLeaderOpFromDriver(driverRep) {
+            for(let i=1; i<=7; i++) {
+                const actionInput = document.getElementById(`op_action_${i}`);
+                if(!actionInput.value.trim()) {
+                    document.getElementById(`op_date_${i}`).value = formatDateThai(driverRep.date);
+                    document.getElementById(`op_time_${i}`).value = `${driverRep.startTime} - ${driverRep.endTime} น.`;
+                    document.getElementById(`op_action_${i}`).value = driverRep.workResult;
+                    document.getElementById(`op_car_${i}`).value = `${driverRep.vehicleType} ทะเบียน ${driverRep.vehiclePlate}`;
+                    break;
+                }
+            }
+        }
+
+        // Modal for selection
+        function openVehicleSelectorModal() {
+            const container = document.getElementById('modal-vehicle-list');
+            if(driverReports.length === 0) {
+                container.innerHTML = `<p class="text-sm text-slate-500 text-center py-6">ยังไม่มีข้อมูลรายงานการใช้รถยนต์ในระบบ</p>`;
+            } else {
+                container.innerHTML = driverReports.map((item, idx) => `
+                    <div class="p-3 border border-slate-200 rounded-xl hover:bg-orange-50 transition flex justify-between items-center text-xs">
+                        <div>
+                            <div class="font-bold text-slate-800">${formatDateThai(item.date)} | เวลา ${item.startTime} - ${item.endTime} น.</div>
+                            <div class="text-slate-600">${item.vehicleType} (${item.vehiclePlate})</div>
+                            <div class="text-slate-500 line-clamp-1">ผลงาน: ${item.workResult}</div>
+                        </div>
+                        <button onclick="selectVehicleForLeader('${item.id}')" class="px-3 py-1.5 bg-orange-500 text-white rounded-lg hover:bg-orange-600 font-medium">
+                            นำเข้าข้อมูล
+                        </button>
+                    </div>
+                `).join('');
+            }
+            document.getElementById('vehicleModal').classList.remove('hidden');
+        }
+
+        function closeVehicleModal() {
+            document.getElementById('vehicleModal').classList.add('hidden');
+        }
+
+        function selectVehicleForLeader(driverId) {
+            const report = driverReports.find(r => r.id === driverId);
+            if(report) {
+                autoFillLeaderOpFromDriver(report);
+                showToast('นำเข้าข้อมูลสำเร็จ');
+            }
+            closeVehicleModal();
+        }
+
+        // Render History Lists
+        function renderHistoryLists() {
+            // Leader list
+            const leaderListEl = document.getElementById('leader-reports-list');
+            document.getElementById('leader-count-badge').textContent = `${leaderReports.length} รายการ`;
+            
+            if(leaderReports.length === 0) {
+                leaderListEl.innerHTML = `<p class="text-xs text-slate-400 text-center py-4">ยังไม่มีรายงานการออกปฏิบัติงาน</p>`;
+            } else {
+                leaderListEl.innerHTML = leaderReports.map(item => `
+                    <div class="p-3 border border-slate-200 rounded-xl hover:border-korat-blue transition ${selectedLeaderReportId === item.id ? 'bg-blue-50 border-korat-blue' : 'bg-slate-50'}">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <span class="text-xs font-bold text-korat-blue">เลขที่ ${item.docNumber}</span>
+                                <div class="text-xs font-semibold text-slate-800">ประจำวันที่ ${formatDateThai(item.docDate)}</div>
+                                <div class="text-[11px] text-slate-500">โดย: ${item.leaderNameSigned}</div>
+                            </div>
+                            <div class="flex gap-1">
+                                <button onclick="selectLeaderForPreview('${item.id}')" class="px-2 py-1 bg-blue-600 text-white text-[11px] rounded hover:bg-blue-700">ดูเอกสาร</button>
+                                <button onclick="deleteReport('leader', '${item.id}')" class="px-2 py-1 bg-rose-100 text-rose-600 text-[11px] rounded hover:bg-rose-200"><i class="fa-solid fa-trash"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            // Driver list
+            const driverListEl = document.getElementById('driver-reports-list');
+            document.getElementById('driver-count-badge').textContent = `${driverReports.length} รายการ`;
+            
+            if(driverReports.length === 0) {
+                driverListEl.innerHTML = `<p class="text-xs text-slate-400 text-center py-4">ยังไม่มีรายงานการใช้รถยนต์</p>`;
+            } else {
+                driverListEl.innerHTML = driverReports.map(item => `
+                    <div class="p-3 border border-slate-200 rounded-xl bg-slate-50 hover:border-korat-orange transition">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <span class="text-xs font-bold text-korat-orange">${item.vehicleType} (ทะเบียน ${item.vehiclePlate})</span>
+                                <div class="text-xs font-semibold text-slate-800">วันที่ ${formatDateThai(item.date)} (${item.startTime} - ${item.endTime} น.)</div>
+                                <div class="text-[11px] text-slate-500">พนักงานขับรถ: ${item.driverName}</div>
+                            </div>
+                            <button onclick="deleteReport('driver', '${item.id}')" class="px-2 py-1 bg-rose-100 text-rose-600 text-[11px] rounded hover:bg-rose-200"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        function selectLeaderForPreview(id) {
+            selectedLeaderReportId = id;
+            renderHistoryLists();
+            previewCombinedDocument();
+        }
+
+        function deleteReport(type, id) {
+            if(confirm('คุณต้องการลบรายงานนี้หรือไม่?')) {
+                if(type === 'driver') {
+                    driverReports = driverReports.filter(r => r.id !== id);
+                } else {
+                    leaderReports = leaderReports.filter(r => r.id !== id);
+                    if(selectedLeaderReportId === id) selectedLeaderReportId = null;
+                }
+                persistData();
+                renderHistoryLists();
+                previewCombinedDocument();
+                showToast('ลบรายการเรียบร้อยแล้ว');
+            }
+        }
+
+        // Preview Combined Document in Official Thai Format
+        function previewCombinedDocument() {
+            const container = document.getElementById('pdf-container');
+            
+            // Current or default Leader Report
+            const leaderRep = leaderReports.find(r => r.id === selectedLeaderReportId) || leaderReports[0] || getMockLeaderReport();
+            
+            // Driver reports linked or all available
+            const dReports = driverReports.length > 0 ? driverReports : [getMockDriverReport()];
+
+            // Extract station name from selected department for report text
+            const stationNameOnly = leaderRep.department ? leaderRep.department.split(' ')[0] : 'สถานีดับเพลิง';
+
+            // HTML for Page 1: รายงานการออกปฏิบัติงาน (บันทึกข้อความ)
+            let page1HTML = `
+                <div class="gov-page gov-document" id="pdf-page-1">
+                    <!-- Head Garuda Logo & Title -->
+                    <div class="relative flex items-center justify-center mb-4">
+                        <div class="text-center">
+                            <!-- SVG Garuda Emblem -->
+                            <svg class="w-16 h-16 mx-auto mb-1" viewBox="0 0 100 100" fill="#000">
+                                <path d="M50,5 C55,15 65,20 75,18 C70,25 75,35 85,35 C75,40 70,50 65,65 C60,55 55,60 50,75 C45,60 40,55 35,65 C30,50 25,40 15,35 C25,35 30,25 25,18 C35,20 45,15 50,5 Z"/>
+                            </svg>
+                            <h2 class="font-bold text-2xl tracking-wide">บันทึกข้อความ</h2>
+                        </div>
+                    </div>
+
+                    <!-- Memo Header Details -->
+                    <div class="space-y-1 mb-3 leading-tight">
+                        <div class="flex">
+                            <span class="font-bold w-24">ส่วนราชการ</span>
+                            <span class="border-b border-dotted border-slate-400 flex-grow">${leaderRep.department}</span>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="flex">
+                                <span class="font-bold w-10">ที่</span>
+                                <span class="border-b border-dotted border-slate-400 flex-grow">${leaderRep.docNumber}</span>
+                            </div>
+                            <div class="flex">
+                                <span class="font-bold w-12">วันที่</span>
+                                <span class="border-b border-dotted border-slate-400 flex-grow">${formatDateThaiFull(leaderRep.docDate)}</span>
+                            </div>
+                        </div>
+                        <div class="flex">
+                            <span class="font-bold w-16">เรื่อง</span>
+                            <span class="border-b border-dotted border-slate-400 flex-grow">รายงานการออกปฏิบัติงาน</span>
+                        </div>
+                    </div>
+
+                    <!-- Addressed To -->
+                    <div class="space-y-1 mb-4">
+                        <div><span class="font-bold">เรียน</span> นายกเทศมนตรีนครนครราชสีมา</div>
+                        <div class="pl-8 text-sm text-slate-700">ผ่าน ปลัดเทศบาล หัวหน้าสำนักปลัดเทศบาล หัวหน้าฝ่ายปกครอง และ หัวหน้างาน</div>
+                    </div>
+
+                    <!-- Content Paragraph -->
+                    <div class="space-y-2 text-justify">
+                        <p class="indent-12">
+                            หัวหน้าชุดเวรเตรียมพร้อมชุดที่ <span class="font-semibold">${leaderRep.shiftTeamNo}</span> ${stationNameOnly} 
+                            ด้วยข้าพเจ้า <span class="font-semibold">${leaderRep.leaderNameSigned}</span> ฝ่ายปกครอง สำนักปลัดเทศบาล ขอรายงานผลการปฏิบัติงานของชุดเวรเตรียมพร้อม ดังนี้
+                        </p>
+
+                        <!-- List 1 - 7 -->
+                        <div class="space-y-1.5 my-2 pl-4">
+            `;
+
+            // Loop 7 items
+            for(let i = 1; i <= 7; i++) {
+                const item = (leaderRep.opItems && leaderRep.opItems[i-1]) ? leaderRep.opItems[i-1] : null;
+                if(item && (item.date || item.action)) {
+                    page1HTML += `
+                        <div class="text-sm">
+                            <span class="font-bold">${toThaiDigit(i)}.</span> วันที่ <span class="border-b border-dotted border-slate-400 px-2">${item.date || '-'}</span> 
+                            เวลา <span class="border-b border-dotted border-slate-400 px-2">${item.time || '-'}</span> 
+                            ออกปฏิบัติงาน <span class="border-b border-dotted border-slate-400 px-2">${item.action || '-'}</span> 
+                            รถ <span class="border-b border-dotted border-slate-400 px-2">${item.car || '-'}</span>
+                        </div>
+                    `;
+                } else {
+                    page1HTML += `
+                        <div class="text-sm text-slate-600">
+                            <span class="font-bold">${toThaiDigit(i)}.</span> วันที่ .................. เดือน ...................... พ.ศ. ........... เวลา .................. น. 
+                            ออกปฏิบัติงาน .............................................. รถ ....................................
+                        </div>
+                    `;
+                }
+            }
+
+            page1HTML += `
+                        </div>
+
+                        <!-- Results & Status -->
+                        <div class="space-y-1 pt-2">
+                            <div class="flex">
+                                <span class="font-bold whitespace-nowrap">ผลการออกปฏิบัติงาน:</span>
+                                <span class="ml-2 border-b border-dotted border-slate-400 flex-grow">${leaderRep.overallResult}</span>
+                            </div>
+                            <div class="flex">
+                                <span class="font-bold whitespace-nowrap">อุปกรณ์ที่นำไปปฏิบัติงานใช้การได้ดีหรือไม่:</span>
+                                <span class="ml-2 border-b border-dotted border-slate-400 flex-grow">${leaderRep.equipmentStatus}</span>
+                            </div>
+                            <div class="flex">
+                                <span class="font-bold whitespace-nowrap">ขณะปฏิบัติงานมีปัญหาหรืออุปสรรคหรือไม่:</span>
+                                <span class="ml-2 border-b border-dotted border-slate-400 flex-grow">${leaderRep.problems}</span>
+                            </div>
+                        </div>
+
+                        <p class="indent-12 pt-2">จึงเรียนมาเพื่อโปรดทราบ</p>
+                    </div>
+
+                    <!-- Leader Signature Box -->
+                    <div class="mt-8 flex justify-end text-center">
+                        <div class="w-64 space-y-1">
+                            <div>ลงชื่อ..........................................................ผู้รายงาน</div>
+                            <div class="h-12 flex items-center justify-center">
+                                ${leaderRep.signatureImg ? `<img src="${leaderRep.signatureImg}" class="max-h-12 mx-auto">` : ''}
+                            </div>
+                            <div class="font-bold">(${leaderRep.leaderNameSigned})</div>
+                            <div class="text-sm text-slate-800">${leaderRep.leaderPositionTitle}</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // HTML for Page 2+: รายงานการใช้รถยนต์ออกปฏิบัติงาน
+            let pagesDriverHTML = dReports.map((dRep, index) => `
+                <div class="gov-page gov-document mt-6" id="pdf-page-driver-${index}">
+                    <div class="text-center font-bold text-xl mb-4 border-b-2 border-black pb-2">
+                        รายงานการใช้รถยนต์ออกปฏิบัติงาน<br>
+                        <span class="text-base font-normal">ฝ่ายปกครอง สำนักปลัดเทศบาล เทศบาลนครนครราชสีมา</span>
+                    </div>
+
+                    <div class="space-y-3">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>ข้าพเจ้า <span class="border-b border-dotted border-slate-400 font-semibold px-2">${dRep.driverName}</span></div>
+                            <div>ตำแหน่ง <span class="border-b border-dotted border-slate-400 font-semibold px-2">${dRep.driverPosition}</span></div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>ทำหน้าที่ขับรถยนต์ <span class="border-b border-dotted border-slate-400 font-semibold px-2">${dRep.vehicleType}</span></div>
+                            <div>หมายเลขทะเบียน <span class="border-b border-dotted border-slate-400 font-semibold px-2">${dRep.vehiclePlate}</span></div>
+                        </div>
+
+                        <div class="grid grid-cols-3 gap-2">
+                            <div>ในวันที่ <span class="border-b border-dotted border-slate-400 font-semibold px-1">${formatDateThaiFull(dRep.date)}</span></div>
+                            <div>ออกปฏิบัติงานตั้งแต่เวลา <span class="border-b border-dotted border-slate-400 font-semibold px-1">${dRep.startTime}</span> น.</div>
+                            <div>ถึงเวลา <span class="border-b border-dotted border-slate-400 font-semibold px-1">${dRep.endTime}</span> น.</div>
+                        </div>
+
+                        <!-- Attending personnel -->
+                        <div class="pt-2">
+                            <div class="font-bold mb-1">มีผู้ร่วมปฏิบัติงาน ดังนี้</div>
+                            <div class="grid grid-cols-2 gap-y-1 pl-4 text-sm">
+                                <div>๑. ${dRep.attendingStaff[0] || '.........................................................'}</div>
+                                <div>๒. ${dRep.attendingStaff[1] || '.........................................................'}</div>
+                                <div>๓. ${dRep.attendingStaff[2] || '.........................................................'}</div>
+                                <div>๔. ${dRep.attendingStaff[3] || '.........................................................'}</div>
+                                <div>๕. ${dRep.attendingStaff[4] || '.........................................................'}</div>
+                                <div>๖. ${dRep.attendingStaff[5] || '.........................................................'}</div>
+                            </div>
+                        </div>
+
+                        <!-- Absent staff -->
+                        <div class="pt-2">
+                            <div class="font-bold mb-1">พนักงานประจำรถไม่ออกร่วมปฏิบัติงาน มีดังนี้</div>
+                            <div class="space-y-1 pl-4 text-sm">
+                                <div>
+                                    ๑. ${dRep.absentStaff && dRep.absentStaff[0] ? dRep.absentStaff[0].name : '.........................................................'} 
+                                    สาเหตุเนื่องจาก <span class="border-b border-dotted border-slate-400">${dRep.absentStaff && dRep.absentStaff[0] ? dRep.absentStaff[0].reason : '.........................................................'}</span>
+                                </div>
+                                <div>
+                                    ๒. ${dRep.absentStaff && dRep.absentStaff[1] ? dRep.absentStaff[1].name : '.........................................................'} 
+                                    สาเหตุเนื่องจาก <span class="border-b border-dotted border-slate-400">${dRep.absentStaff && dRep.absentStaff[1] ? dRep.absentStaff[1].reason : '.........................................................'}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Work Result & Obstacles -->
+                        <div class="space-y-2 pt-2">
+                            <div class="flex">
+                                <span class="font-bold whitespace-nowrap">ผลการปฏิบัติงาน:</span>
+                                <span class="ml-2 border-b border-dotted border-slate-400 flex-grow">${dRep.workResult}</span>
+                            </div>
+                            <div class="flex">
+                                <span class="font-bold whitespace-nowrap">อุปสรรคและปัญหา:</span>
+                                <span class="ml-2 border-b border-dotted border-slate-400 flex-grow">${dRep.problems}</span>
+                            </div>
+                        </div>
+
+                        <div class="pt-2">
+                            <div>เรียน หัวหน้าสถานีดับเพลิง <span class="border-b border-dotted border-slate-400 font-semibold">${dRep.stationName}</span></div>
+                            <div class="pl-8 text-sm">เพื่อโปรดทราบ</div>
+                        </div>
+                    </div>
+
+                    <!-- Signatures footer -->
+                    <div class="mt-10 grid grid-cols-2 gap-8 text-center pt-4">
+                        <div class="space-y-1">
+                            <div>ลงชื่อ..........................................................</div>
+                            <div class="text-xs text-slate-500">ตำแหน่ง หัวหน้าชุดเวรเตรียมพร้อม</div>
+                            <div class="font-semibold text-sm pt-2">(${dRep.leaderReceiver || '...................................................'})</div>
+                        </div>
+                        <div class="space-y-1">
+                            <div>ลงชื่อ..........................................................</div>
+                            <div class="h-10 flex items-center justify-center">
+                                ${dRep.signatureImg ? `<img src="${dRep.signatureImg}" class="max-h-10 mx-auto">` : ''}
+                            </div>
+                            <div class="font-semibold text-sm">(${dRep.driverNameSigned || dRep.driverName})</div>
+                            <div class="text-xs text-slate-500">ตำแหน่ง ${dRep.driverPosition}</div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+            container.innerHTML = page1HTML + pagesDriverHTML;
+        }
+
+        // Generate PDF using html2pdf.js
+        function downloadPDF() {
+            showToast('กำลังประมวลผลไฟล์ PDF...');
+            const element = document.getElementById('pdf-container');
+            const opt = {
+                margin:       [5, 5, 5, 5],
+                filename:     `E-Operation_Report_${new Date().toISOString().split('T')[0]}.pdf`,
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+
+            html2pdf().set(opt).from(element).save().then(() => {
+                showToast('ดาวน์โหลดไฟล์ PDF เรียบร้อยแล้ว');
+            });
+        }
+
+        // Helper Functions & Mock Data
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toast-message').textContent = msg;
+            toast.classList.remove('hidden');
+            setTimeout(() => toast.classList.add('hidden'), 3500);
+        }
+
+        function formatDateThai(dateStr) {
+            if(!dateStr) return '';
+            const d = new Date(dateStr);
+            const months = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
+            return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear() + 543}`;
+        }
+
+        function formatDateThaiFull(dateStr) {
+            if(!dateStr) return '';
+            const d = new Date(dateStr);
+            const months = ['มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน', 'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'];
+            return `${d.getDate()} เดือน ${months[d.getMonth()]} พ.ศ. ${d.getFullYear() + 543}`;
+        }
+
+        function toThaiDigit(n) {
+            const thaiDigits = ['๐', '๑', '๒', '๓', '๔', '๕', '๖', '๗', '๘', '๙'];
+            return n.toString().replace(/\d/g, d => thaiDigits[d]);
+        }
+
+        function persistData() {
+            localStorage.setItem('e_report_drivers', JSON.stringify(driverReports));
+            localStorage.setItem('e_report_leaders', JSON.stringify(leaderReports));
+        }
+
+        function loadStoredData() {
+            const d = localStorage.getItem('e_report_drivers');
+            const l = localStorage.getItem('e_report_leaders');
+            if(d) driverReports = JSON.parse(d);
+            if(l) leaderReports = JSON.parse(l);
+
+            if(driverReports.length === 0 && leaderReports.length === 0) {
+                loadMockData();
+            }
+        }
+
+        function loadMockData() {
+            driverReports = [getMockDriverReport()];
+            leaderReports = [getMockLeaderReport()];
+            selectedLeaderReportId = leaderReports[0].id;
+            persistData();
+            renderHistoryLists();
+            previewCombinedDocument();
+            showToast('โหลดข้อมูลตัวอย่างเรียบร้อยแล้ว');
+        }
+
+        function getMockDriverReport() {
+            return {
+                id: 'DRV-MOCK-1',
+                date: new Date().toISOString().split('T')[0],
+                driverName: 'นายสมชาย ใจดี',
+                driverPosition: 'พนักงานขับรถยนต์',
+                vehicleType: 'รถยนต์บรรทุกน้ำดับเพลิง',
+                vehiclePlate: 'กข 5678 นครราชสีมา',
+                startTime: '08:30',
+                endTime: '16:30',
+                attendingStaff: ['นายวิชัย รักชาติ', 'นายประสิทธิ์ มีสุข', 'นายอนันต์ มั่นคง'],
+                absentStaff: [{ name: 'นายณรงค์ สายชล', reason: 'ลากิจ' }],
+                stationName: 'สุรนารี',
+                workResult: 'ออกตรวจจุดเสี่ยงและดับเพลิงหญ้าแห้งบริเวณริมถนนมิตรภาพ',
+                problems: 'การจราจรติดขัดช่วงชั่วโมงเร่งด่วน',
+                driverNameSigned: 'นายสมชาย ใจดี',
+                leaderReceiver: 'นายสุรนาท วัฒนากลาง',
+                signatureImg: null,
+                timestamp: new Date().toISOString()
+            };
+        }
+
+        function getMockLeaderReport() {
+            const todayStr = new Date().toISOString().split('T')[0];
+            return {
+                id: 'LDR-MOCK-1',
+                department: 'สถานีดับเพลิงจอมสุรางค์ยาตร์ ฝ่ายปกครอง สำนักปลัดเทศบาล',
+                docNumber: 'นม 52001/342',
+                docDate: todayStr,
+                shiftTeamNo: '๑',
+                opItems: [
+                    { no: 1, date: formatDateThai(todayStr), time: '08:30 - 10:30 น.', action: 'ออกตรวจพื้นที่จุดเสี่ยงภัยแล้ง', car: 'รถดับเพลิง ทะเบียน กข 5678' },
+                    { no: 2, date: formatDateThai(todayStr), time: '11:00 - 12:30 น.', action: 'สนับสนุนน้ำอุปโภคบริโภคแก่ชุมชน', car: 'รถบรรทุกน้ำ ทะเบียน กข 1234' },
+                    { no: 3, date: formatDateThai(todayStr), time: '14:00 - 16:00 น.', action: 'ระงับเหตุเพลิงไหม้หญ้าแห้ง', car: 'รถดับเพลิง ทะเบียน กข 5678' }
+                ],
+                overallResult: 'การปฏิบัติงานเป็นไปด้วยความเรียบร้อย สามารถช่วยเหลือประชาชนและระงับเหตุได้ทันท่วงที',
+                equipmentStatus: 'ใช้การได้ดีทุกรายการ',
+                problems: 'ไม่มีปัญหาและอุปสรรคในการปฏิบัติงาน',
+                leaderNameSigned: 'นายสุรนาท วัฒนากลาง',
+                leaderPositionTitle: 'หัวหน้าชุดเวรเตรียมพร้อมชุดที่ ๑',
+                signatureImg: null,
+                timestamp: new Date().toISOString()
+            };
+        }
+    </script>
 </body>
 </html>
